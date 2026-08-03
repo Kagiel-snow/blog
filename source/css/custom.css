@@ -36,11 +36,13 @@
 
 /* 专属悬浮播放器外壳样式 */
 #kagiel-player {
-    position: fixed;
-    bottom: 30px;
-    left: 100px;
-    width: 320px;
-    z-index: 99999;
+    position: fixed !important;
+    bottom: 0% !important;
+    left: 0px !important;
+    right: auto !important;
+    top: auto !important;
+    width: 300px !important;
+    z-index: 99999 !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.3) !important;
