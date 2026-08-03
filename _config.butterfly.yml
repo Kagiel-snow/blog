@@ -1072,7 +1072,7 @@ css_prefix: true
 inject:
   head:
     - <link rel="stylesheet" href="https://unpkg.com/aplayer@1.10.1/dist/APlayer.min.css">
-    - <link rel="stylesheet" href="/css/custom.css">
+    - <link rel="stylesheet" href="/blog/css/custom.css">
   bottom:
     - <div id="kagiel-player"></div>
     - <script src="https://unpkg.com/aplayer@1.10.1/dist/APlayer.min.js"></script>
@@ -1095,14 +1095,14 @@ inject:
               {
                 name: 'phonekisses',
                 artist: 'Kagiel',
-                url: '/music/phonekisses.mp3',
-                cover: '/music/phonekisses.jpg'
+                url: '/blog/music/phonekisses.mp3',
+                cover: '/blog/music/phonekisses.jpg'
               },
               {
                 name: 'nop',
                 artist: 'Kagiel',
-                url: '/music/nop.mp3',
-                cover: '/music/nop.jpg'
+                url: '/blog/music/nop.mp3',
+                cover: '/blog/music/nop.jpg'
               }
             ]
           });
