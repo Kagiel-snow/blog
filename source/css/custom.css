@@ -1,0 +1,62 @@
+/* --------------------------------------------------
+   Butterfly 5.6.1 终极毛玻璃透光修复版
+   -------------------------------------------------- */
+
+/* 清空整体布局容器的背景 */
+.layout,
+#content-inner,
+#recent-posts {
+    background: transparent !important;
+}
+
+/* 必须使用 background 属性（不能用 background-color），彻底击碎主题的简写覆盖 */
+#recent-posts>.recent-post-item,
+#aside-content .card-widget,
+.layout>div:first-child,
+#page-header.nav-fixed #nav,
+#footer {
+    background: rgba(255, 255, 255, 0.25) !important;
+    /* 白天模式：25%透明白 */
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 夜间模式卡片背景 */
+[data-theme='dark'] #recent-posts>.recent-post-item,
+[data-theme='dark'] #aside-content .card-widget,
+[data-theme='dark'] .layout>div:first-child,
+[data-theme='dark'] #page-header.nav-fixed #nav,
+[data-theme='dark'] #footer {
+    background: rgba(15, 15, 20, 0.3) !important;
+    /* 夜间模式：30%透明暗色 */
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 专属悬浮播放器外壳样式 */
+#kagiel-player {
+    position: fixed;
+    bottom: 30px;
+    left: 100px;
+    width: 320px;
+    z-index: 99999;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.3) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+#kagiel-player .aplayer {
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 12px !important;
+    background: transparent !important;
+}
+
+[data-theme='dark'] #kagiel-player {
+    background: rgba(15, 15, 20, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
