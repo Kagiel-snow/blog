@@ -630,7 +630,7 @@ facebook_comments:
 # Twikoo
 # https://github.com/imaegoo/twikoo
 twikoo:
-  envId: https://twikoo-tau-flax.vercel.app
+  envId: https://twikoo-kappa-cyan-63.vercel.app
   region:
   # Use Twikoo visitor count as the page view count
   visitor: false
