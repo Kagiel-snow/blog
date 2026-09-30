@@ -1,6 +1,7 @@
 name: Pages
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main # default branch
@@ -8,6 +9,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      TZ: Asia/Tokyo
     steps:
       - uses: actions/checkout@v4
         with:
@@ -17,18 +22,12 @@ jobs:
       - name: Use Node.js 24
         uses: actions/setup-node@v4
         with:
-          # Examples: 20, 18.19, >=16.20.2, lts/Iron, lts/Hydrogen, *, latest, current, node
-          # Ref: https://github.com/actions/setup-node#supported-version-syntax
-          node-version: "20"
-      - name: Cache NPM dependencies
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.OS }}-npm-cache
-          restore-keys: |
-            ${{ runner.OS }}-npm-cache
+          node-version: "24"
+          cache: npm
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
+      - name: Test multilingual routing and content protection
+        run: npm test
       - name: Build
         run: npm run build
       - name: Upload Pages artifact

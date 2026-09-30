@@ -1,0 +1,111 @@
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const cheerio = require('cheerio');
+const { locales, legacy, origin, write, escape, canonical, translations, targetFor, encodePath } = require('./lib.cjs');
+function switcher(record, records, locale) {
+  return `<div class="menus_item i18n-menu"><span class="site-page group" tabindex="0" aria-label="${escape(locale.switch)}"><i class="fas fa-language fa-fw" aria-hidden="true"></i> ${escape(locale.label)} <i class="fas fa-chevron-down" aria-hidden="true"></i></span><ul class="menus_item_child">` + locales.map(l => {
+    const target = targetFor(record, l, records);
+    return `<li><a class="site-page child" data-locale="${l.id}" lang="${l.id}" title="${escape(target.exact ? l.label : l.missingShort)}" ${target.exact ? `hreflang="${l.id}"` : ''} ${l.id === locale.id ? 'aria-current="page"' : ''} href="${escape(target.url)}">${escape(l.label)}${target.exact ? '' : ' ↩'}</a></li>`;
+  }).join('') + '</ul></div>';
+}
+function finalize(output, records) {
+  const routes = new Set();
+  for (const r of records) {
+    const route = locales.find(l => l.id === r.lang).root.slice(1) + r.route;
+    if (routes.has(route)) throw new Error(`Duplicate output route: ${route}`);
+    routes.add(route);
+    r.output = route; r.canonical = canonical(r.url);
+  }
+  for (const record of records) {
+    const locale = locales.find(l => l.id === record.lang);
+    const file = path.join(output, record.output);
+    const original = fs.readFileSync(file, 'utf8');
+    const $ = cheerio.load(original);
+    // Technical code is checked across DOM serialization as well as in source translations.
+    const originalCode = $('pre').map((_, el) => $(el).text()).get();
+    $('html').attr('lang', locale.id);
+    $('link[rel="canonical"], link[hreflang]').remove();
+    $('head').append(`<link rel="canonical" href="${escape(record.canonical)}">`);
+    const peers = translations(records, record.key);
+    for (const peer of peers) $('head').append(`<link rel="alternate" hreflang="${peer.lang}" href="${escape(peer.canonical)}">`);
+    const defaultPeer = peers.find(r => r.lang === 'zh-CN');
+    if (defaultPeer) $('head').append(`<link rel="alternate" hreflang="x-default" href="${escape(defaultPeer.canonical)}">`);
+    if (record.noindex) $('head').append('<meta name="robots" content="noindex,follow">');
+    $('head').append(`<link rel="stylesheet" href="/css/i18n.css"><script src="/js/i18n.js" defer></script>`);
+    $('body').attr('data-site-language', locale.id);
+    const menus = $('#menus .menus_items, #sidebar-menus .menus_items');
+    if (!menus.length) throw new Error(`Butterfly menu hook missing: ${record.output}`);
+    menus.append(switcher(record, records, locale));
+    // A server-rendered notice and real links also work with JavaScript disabled.
+    const notices = [...new Map(records.filter(r => !r.noindex && !records.some(p => p.key === r.key && p.lang === locale.id)).map(r => [r.key, r])).values()];
+    if (record.kind === 'home' || /^page:(tags|categories)$/.test(record.key) || record.key === 'archive:archives/index.html') {
+      const blocks = notices.map(r => `<section class="i18n-missing" id="missing-${escape(r.key)}"><p>${escape(r.kind === 'post' || r.kind === 'page' ? locale.missing : locale.archiveMissing)}</p><p>${escape(r.title || '')}</p>${translations(records, r.key).map(p => `<a lang="${p.lang}" href="${escape(p.url)}">${escape(locales.find(l => l.id === p.lang).label)}: ${escape(p.title || locale.original)}</a>`).join(' · ')}</section>`).join('');
+      $('#recent-posts, #page, #archive').first().prepend(`<div class="i18n-notices">${blocks}</div>`);
+    }
+    if (record.kind === 'home' && !records.some(r => r.lang === locale.id && r.kind === 'post')) $('#recent-posts').prepend(`<div class="recent-post-item i18n-empty"><p>${escape(locale.empty)}</p></div>`);
+    if (record.key === 'page:tags' && !$('.tag-cloud-list a').length) $('.tag-cloud-list').append(`<p>${escape(locale.emptyTags)}</p>`);
+    if (record.key === 'page:categories' && !$('.category-lists a').length) $('.category-lists').append(`<p>${escape(locale.emptyCategories)}</p>`);
+    const share = $('.social-share');
+    if (share.length) {
+      const names = { wechat: locale.wechat, weibo: 'Weibo', qq: 'QQ', facebook: 'Facebook', x: 'X', twitter: 'X / Twitter', telegram: 'Telegram' };
+      share.attr('data-initialized', 'true');
+      share.attr('data-wechat-qrcode-title', locale.share + ' ' + locale.wechat);
+      share.attr('data-wechat-qrcode-helper', locale.scan);
+      for (const site of (share.attr('data-sites') || '').split(',').filter(Boolean)) share.append(`<a class="social-share-icon icon-${escape(site)}" data-title="${escape(locale.share + ' ' + (names[site] || site))}" title="${escape(locale.share + ' ' + (names[site] || site))}"></a>`);
+    }
+    if (record.noindex) {
+      $('.error-img img').attr('alt', locale.notFound);
+      $('.error-info').append(`<p class="i18n-return">${locales.map(l => `<a lang="${l.id}" href="${l.root}">${escape(l.returnHome)} (${escape(l.label)})</a>`).join('<br>')}</p>`);
+    }
+    // Keep metadata for article dates/images generated by the theme; unify URL references.
+    $('meta[property="og:url"]').attr('content', record.canonical);
+    $('script[type="application/ld+json"]').each((_, el) => {
+      const text = $(el).text().trim();
+      if (!text) return;
+      const data = JSON.parse(text);
+      if (data['@type'] === 'BlogPosting' || data['@type'] === 'WebSite') {
+        data.url = record.canonical; data.inLanguage = locale.id;
+        $(el).text(JSON.stringify(data).replace(/</g, '\\u003c'));
+      }
+    });
+    const result = $.html();
+    const reloaded = cheerio.load(result);
+    if (JSON.stringify(originalCode) !== JSON.stringify(reloaded('pre').map((_, el) => reloaded(el).text()).get())) throw new Error(`Code changed during HTML processing: ${file}`);
+    fs.writeFileSync(file, result);
+  }
+  // Ordinary language links are static; JS only enhances the missing-version notice.
+  write(path.join(output, 'js/i18n.js'), `'use strict';\n(() => {\n  const key = new URLSearchParams(location.search).get('missing');\n  if (key) { const notice = document.getElementById('missing-' + key); if (notice) { notice.classList.add('is-visible'); notice.setAttribute('role', 'status'); } }\n})();\n`);
+  write(path.join(output, 'css/i18n.css'), `.i18n-menu:focus-within .menus_item_child{display:block!important}.i18n-menu .menus_item_child{min-width:10rem}.i18n-menu [aria-current=page]{font-weight:700}.i18n-notices:empty{display:none}.i18n-missing{display:none;scroll-margin-top:80px;margin:0 0 1rem;padding:1rem 1.4rem;background:var(--card-bg);border-radius:8px}.i18n-missing:target,.i18n-missing.is-visible{display:block}.i18n-missing a,.i18n-return a{color:var(--theme-color,#49b1f5)}.i18n-empty{padding:1rem}.i18n-empty p{margin:auto}\n`);
+  for (const [old, target] of Object.entries(legacy)) {
+    const dest = target.endsWith('/') ? target.slice(1) + 'index.html' : target.slice(1);
+    if (!fs.existsSync(path.join(output, dest))) throw new Error(`Legacy target missing: ${target}`);
+    const redirect = `<html lang="zh-CN"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><link rel="canonical" href="${escape(canonical(target))}"><meta http-equiv="refresh" content="0;url=${escape(encodePath(target))}"><title>页面已迁移</title></head><body><a href="${escape(encodePath(target))}">继续阅读</a></body></html>`;
+    const oldFile = path.join(output, old.slice(1), 'index.html');
+    if (fs.existsSync(oldFile)) throw new Error(`Alias would overwrite content: ${old}`);
+    write(oldFile, '<!doctype html>' + redirect);
+  }
+  // Normalize the sitemap plugin's URLs to the same canonical policy as the HTML.
+  const sitemapPaths = locales.map(l => l.root + (l.id === 'zh-CN' ? 'sitemap-zh-CN.xml' : 'sitemap.xml'));
+  for (const rel of sitemapPaths) {
+    const file = path.join(output, rel.slice(1));
+    const $ = cheerio.load(fs.readFileSync(file, 'utf8'), { xml: true });
+    $('url').each((_, el) => {
+      const loc = $(el).find('loc');
+      const match = records.find(r => canonical(loc.text()) === r.canonical);
+      if (!match || match.noindex) $(el).remove(); else loc.text(match.canonical);
+    });
+    // Include real generated archive/list routes too, not only posts and source pages.
+    const present = new Set($('loc').map((_, e) => $(e).text()).get());
+    const locale = locales.find(l => rel.startsWith(l.root) && l.root !== '/') || locales[0];
+    for (const r of records.filter(r => r.lang === locale.id && !r.noindex)) if (!present.has(r.canonical)) $('urlset').append(`<url><loc>${escape(r.canonical)}</loc></url>`);
+    fs.writeFileSync(file, $.xml());
+  }
+  write(path.join(output, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemapPaths.map(p => `<sitemap><loc>${origin}${p}</loc></sitemap>`).join('')}</sitemapindex>`);
+  const robots = path.join(output, 'robots.txt');
+  const oldRobots = fs.existsSync(robots) ? fs.readFileSync(robots, 'utf8') : 'User-agent: *\nAllow: /\n';
+  write(robots, oldRobots + (oldRobots.includes(`${origin}/sitemap.xml`) ? '' : `\nSitemap: ${origin}/sitemap.xml\n`));
+  write(path.join(output, '.nojekyll'), '');
+  write(path.join(output, 'i18n-routes.json'), JSON.stringify(records, null, 2));
+}
+module.exports = { finalize };

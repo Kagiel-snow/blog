@@ -1,6 +1,10 @@
 ---
 title: 你好呀
 date: 2026-08-04 00:40:27
+updated: 2026-08-04 04:25:54.426
+lang: zh-CN
+translation_key: hello-blog
+permalink: 2026/08/03/hello world/
 tags:
 ---
 

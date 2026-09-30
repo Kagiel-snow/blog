@@ -3,20 +3,28 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "hexo generate",
+    "build": "node tools/i18n/build.cjs",
     "clean": "hexo clean",
     "deploy": "hexo deploy",
-    "server": "hexo server"
+    "preserver": "npm run build",
+    "server": "node tools/i18n/serve.cjs",
+    "preview": "node tools/i18n/serve.cjs",
+    "check": "node tools/i18n/check.cjs",
+    "post:new": "node tools/i18n/new-post.cjs",
+    "test": "node --test tools/i18n/test.cjs"
   },
   "hexo": {
     "version": "8.1.2"
   },
   "dependencies": {
+    "cheerio": "1.1.2",
     "hexo": "^8.0.0",
+    "hexo-front-matter": "4.2.1",
     "hexo-generator-archive": "^2.0.0",
     "hexo-generator-category": "^2.0.0",
     "hexo-generator-index": "^4.0.0",
     "hexo-generator-searchdb": "^1.5.0",
+    "hexo-generator-sitemap": "3.0.1",
     "hexo-generator-tag": "^2.0.0",
     "hexo-helper-live2d": "^3.1.1",
     "hexo-renderer-ejs": "^2.0.0",
@@ -26,6 +34,7 @@
     "hexo-tag-aplayer": "^3.0.4",
     "hexo-theme-butterfly": "^5.6.1",
     "hexo-theme-landscape": "^1.0.0",
+    "js-yaml": "4.3.1",
     "live2d-widget-model-shizuku": "^1.0.5",
     "live2d-widget-model-z16": "^1.0.5"
   }

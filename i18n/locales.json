@@ -1,0 +1,50 @@
+[
+  {
+    "id": "zh-CN", "label": "简体中文", "root": "/", "source": "source",
+    "description": "Like snow", "keywords": "宅,动漫,游戏,小说,漫画,音乐,网络安全",
+    "menu": ["首页", "时间轴", "标签", "分类", "列表", "音乐", "图片", "动画", "友链", "关于"],
+    "subtitle": "初次见到雪时，感受到的却不是寒冷。",
+    "announcement": "欸，你居然发现我了！这里是 Kagiel，喜欢小说、音乐和游戏，梦想是环游世界。欢迎来和我交流呀！",
+    "follow": "关注我", "reward": "谢谢芝士~", "search": "在找什么呢？我来帮你呀！",
+    "switch": "选择语言", "missing": "这篇内容暂时没有简体中文版本。你可以阅读以下已有版本，或浏览本站其他内容。",
+    "missingShort": "暂无此语言版本，前往首页", "empty": "这里还没有文章。", "notFound": "页面没有找到",
+    "returnHome": "返回首页", "share": "分享到", "wechat": "微信", "alipay": "支付宝", "scan": "使用微信扫描二维码分享。",
+    "original": "阅读已有版本", "archiveMissing": "这个列表在所选语言中暂无对应内容。", "emptyTags": "暂无标签。", "emptyCategories": "暂无分类。"
+  },
+  {
+    "id": "zh-TW", "label": "繁體中文", "root": "/zh-tw/", "source": "locales/zh-TW/source",
+    "description": "如雪一般，記下生活的片刻。", "keywords": "動畫,遊戲,小說,漫畫,音樂,資訊安全",
+    "menu": ["首頁", "文章彙整", "標籤", "分類", "收藏", "音樂", "圖片", "動畫", "友站連結", "關於"],
+    "subtitle": "第一次看見雪，感受到的卻不是寒冷。",
+    "announcement": "嗨，我是 Kagiel！喜歡小說、音樂和遊戲，也夢想著有一天能環遊世界。很高興你來到這裡，歡迎一起聊聊。",
+    "follow": "追蹤我", "reward": "謝謝你的支持！", "search": "想找些什麼呢？",
+    "switch": "選擇語言", "missing": "這篇內容目前還沒有繁體中文版本。你可以閱讀下方已有的版本，或看看其他文章。",
+    "missingShort": "尚無此語言版本，前往首頁", "empty": "這裡還沒有文章。", "notFound": "找不到這個頁面",
+    "returnHome": "回到首頁", "share": "分享至", "wechat": "微信", "alipay": "支付寶", "scan": "使用微信掃描 QR Code，即可分享這篇文章。",
+    "original": "閱讀已有版本", "archiveMissing": "這個列表在所選語言中尚無對應內容。", "emptyTags": "目前沒有標籤。", "emptyCategories": "目前沒有分類。"
+  },
+  {
+    "id": "ja", "label": "日本語", "root": "/ja/", "source": "locales/ja/source",
+    "description": "日々のこと、学んだこと。Kagiel の小さな記録。", "keywords": "アニメ,ゲーム,小説,漫画,音楽,情報セキュリティ",
+    "menu": ["ホーム", "アーカイブ", "タグ", "カテゴリー", "コレクション", "音楽", "写真", "アニメ", "リンク", "このブログについて"],
+    "subtitle": "初めて雪を見たのに、感じたのは寒さではなかった。",
+    "announcement": "こんにちは、Kagiel です。小説や音楽、ゲームが好きで、いつか世界を旅するのが夢です。気軽に声をかけてくださいね。",
+    "follow": "GitHub を見る", "reward": "応援ありがとうございます！", "search": "記事を検索",
+    "switch": "言語を選ぶ", "missing": "この記事の日本語版はまだありません。公開済みの言語版を読むか、ほかの日本語記事をご覧ください。",
+    "missingShort": "未翻訳・日本語トップへ", "empty": "記事はまだありません。", "notFound": "ページが見つかりません",
+    "returnHome": "ホームに戻る", "share": "共有", "wechat": "WeChat", "alipay": "Alipay", "scan": "WeChat で QR コードを読み取ると、この記事を共有できます。",
+    "original": "公開済みの言語版", "archiveMissing": "この一覧に対応する日本語の内容はまだありません。", "emptyTags": "タグはまだありません。", "emptyCategories": "カテゴリーはまだありません。"
+  },
+  {
+    "id": "en", "label": "English", "root": "/en/", "source": "locales/en/source",
+    "description": "Notes on life, learning, and the things I enjoy. By Kagiel.", "keywords": "anime,games,fiction,manga,music,information security",
+    "menu": ["Home", "Archive", "Tags", "Categories", "Collections", "Music", "Images", "Anime", "Links", "About"],
+    "subtitle": "The first time I saw snow, it wasn't the cold that stayed with me.",
+    "announcement": "Hi, I'm Kagiel. I enjoy fiction, music, and games, and I dream of travelling around the world. Thanks for stopping by—feel free to say hello!",
+    "follow": "Follow on GitHub", "reward": "Thank you for your support!", "search": "Search posts",
+    "switch": "Choose a language", "missing": "This post is not available in English yet. You can read one of the published versions below or explore other posts in English.",
+    "missingShort": "Not translated; visit the English home page", "empty": "No posts yet.", "notFound": "Page not found",
+    "returnHome": "Back to home", "share": "Share", "wechat": "WeChat", "alipay": "Alipay", "scan": "Scan this QR code in WeChat to share the post.",
+    "original": "Available versions", "archiveMissing": "There is no matching content in this language yet.", "emptyTags": "No tags yet.", "emptyCategories": "No categories yet."
+  }
+]
