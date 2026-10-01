@@ -9,11 +9,13 @@
 - `source/js/appearance.js`：播放器关闭交互和看板娘的本机显示偏好，不改动文章内容或播放列表。
 - `tools/i18n/appearance.cjs`：构建时给 Butterfly 输出添加原生 `details` 折叠面板；由 `html.cjs` 调用。没有修改第三方主题源码。
 - `i18n/locales.json`：新导航分组与新增控件的四语言文案。
+- `source/css/sections.css` 与 `tools/i18n/sections.cjs`：音乐、图片、动画、友链、关于、标签和分类的独立栏目布局；它们共享蓝白灰变量，正文文章继续使用原阅读布局。
+- `source/data/collections.json`、`i18n/sections.json`：媒体清单和栏目四语言文案。具体维护见 `README.collections.md`。
 
 ## 图片
 
 - 首页：`source/img/sky-window.jpg`，来自用户图库的「【哲风壁纸】云朵-伊蕾娜-窗边.jpg」。
-- 普通页面：`source/img/snowfall.jpg`，来自「【哲风壁纸】下雪-冬季-冬日.jpg」。
+- 默认封面：`source/img/snowfall.jpg`，来自「【哲风壁纸】下雪-冬季-冬日.jpg」。收藏等七个栏目现在取消大头图和侧栏，给画廊、歌单等内容留出位置。
 - 原有文章封面、头像、图片及背景文件均保留；图片只是复制到博客目录，不再依赖本机图库路径。首页头图不再请求随机图片服务。
 - 图片采用 CSS `cover` 裁切，窄屏调整焦点。无需安装图片插件。
 
@@ -47,10 +49,12 @@ Windows 下若构建最后一步提示 `EPERM` 无法替换 `public`，先停止
 - 更新 Butterfly 后，重点检查 `appearance.cjs` 使用的菜单、侧栏和播放器 DOM 接口，以及手机目录弹层。
 - 新增文章仍按现有多语言流程维护，视觉层不修改 front matter、正文、代码、公式或 URL。
 
-## 本次验收（2026-10-01）
+## 上一阶段：基础视觉验收（2026-10-01）
 
 - 多语言正式构建通过：52 个 HTML 页面，站内链接、必需路由、语言隔离、canonical、hreflang 和 sitemap 检查通过。
 - 本地 HTTP 检查：52 个页面及新增图片、CSS、JavaScript、两首原有音乐全部返回 200。
 - `npm test` 两项通过；其中独立的 58 页测试站覆盖缺少翻译、空语言站、标签分类、草稿和技术内容保护。
 - 浏览器检查：390px 手机、1366px 桌面、1600px 宽屏；检查了日夜切换、播放器展开/关闭、看板娘开关、四语言文章对应跳转和页面溢出。
 - 修改 4 个现有文件，新增 5 个文件；没有删除原有文件，也没有改动文章正文、旧 URL 或依赖包。未提交 Git 或部署到线上。
+
+后续内容丰富与栏目改造见 `README.collections.md`，当前构建页数随文章和标签增长。

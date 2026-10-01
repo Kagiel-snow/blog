@@ -1,5 +1,17 @@
 'use strict';
 (() => {
+  const comments = document.querySelector('.collection-comments');
+  if (comments) {
+    const openComments = () => { if (location.hash === '#post-comment') comments.open = true; };
+    openComments();
+    window.addEventListener('hashchange', openComments);
+    document.addEventListener('click', event => {
+      const anchor = event.target.closest('a[href]');
+      if (!anchor) return;
+      const target = new URL(anchor.href, location.href);
+      if (target.origin === location.origin && target.pathname === location.pathname && target.hash === '#post-comment') comments.open = true;
+    });
+  }
   const filters = document.querySelector('.gallery-filters');
   if (filters) {
     filters.hidden = false;
