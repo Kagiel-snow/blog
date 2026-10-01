@@ -19,14 +19,15 @@ nav:
 
 menu:
   首页: / || fas fa-home
-  时间轴: /archives/ || fas fa-archive
-  标签: /tags/ || fas fa-tags
-  分类: /categories/ || fas fa-folder-open
-  List||fas fa-list:
+  文章||fas fa-book-open:
+    时间轴: /archives/ || fas fa-archive
+    标签: /tags/ || fas fa-tags
+    分类: /categories/ || fas fa-folder-open
+  收藏||fas fa-bookmark:
     音乐: /music/ || fas fa-music
     图片: /Gallery/ || fas fa-images
     动画: /movies/ || fas fa-video
-  友链: /link/ || fas fa-link
+    友链: /link/ || fas fa-link
   关于: /about/ || fas fa-heart
 
   # Home: / || fas fa-home
@@ -74,10 +75,10 @@ avatar:
 disable_top_img: false
 
 # If the banner of page not setting, it will show the default_top_img
-default_top_img: https://t.alcy.cc/ycy
+default_top_img: /img/snowfall.jpg
 
 # The banner image of index page
-index_img: https://t.alcy.cc/ycy
+index_img: /img/sky-window.jpg
 
 # The banner image of archive page
 archive_img:
@@ -104,7 +105,7 @@ footer_img: false
 # Website Background
 # Can set it to color, image URL or an array containing colors and/or image URLs
 # If an array is provided, a random background will be selected from the array on each load
-background: /img/background.jpg
+background: "#f3f6f9"
 
 cover:
   # Disable the cover or not
@@ -157,13 +158,13 @@ post_meta:
 # The position of site info, eg: 300px/300em/300rem/10%
 index_site_info_top:
 # The height of top_img, eg: 300px/300em/300rem
-index_top_img_height:
+index_top_img_height: 62vh
 
 # The subtitle on homepage
 subtitle:
   enable: true
   # Typewriter Effect
-  effect: true
+  effect: false
   # Customize typed.js
   # https://github.com/mattboldt/typed.js/#customization
   typed_option:
@@ -174,7 +175,7 @@ subtitle:
   # 1 - hitokoto.cn
   # 2 - https://api.aa1.cn/doc/yiyan.html
   # 3 - jinrishici.com
-  source: 1
+  source: false
   # If you close the typewriter effect, the subtitle will only show the first line of sub
   sub: 初めて雪を見たのに、感じたのは寒さではなかった。
 
@@ -196,7 +197,7 @@ index_layout: 3
 index_post_content:
   method: 3
   # If you set method to 2 or 3, the length need to config
-  length: 500
+  length: 180
 
 # --------------------------------------
 # Post Settings
@@ -208,7 +209,7 @@ toc:
   number: true
   expand: true
   # Only for post
-  style_simple: false
+  style_simple: true
   scroll_percent: true
 
 post_copyright:
@@ -780,7 +781,22 @@ site_verification:
 # Theme color for customize
 # Notice: color value must in double quotes like "#000" or may cause error!
 
-# theme_color:
+theme_color:
+  enable: true
+  main: "#426f98"
+  paginator: "#426f98"
+  button_hover: "#5b83a7"
+  text_selection: "#c6ddef"
+  link_color: "#426f98"
+  meta_color: "#65778a"
+  hr_color: "#dfe7ef"
+  toc_color: "#426f98"
+  blockquote_padding_color: "#426f98"
+  scrollbar_color: "#9fb5c9"
+  meta_theme_color_light: "#f3f6f9"
+  meta_theme_color_dark: "#17202b"
+
+# Other supported color options:
 #   enable: true
 #   main: "#49B1F5"
 #   paginator: "#00c4b6"
@@ -808,7 +824,7 @@ tag_ui:
 rounded_corners_ui: true
 
 # Stretches the lines so that each line has equal width
-text_align_justify: true
+text_align_justify: false
 
 # Add a mask to the header and footer
 mask:
@@ -817,7 +833,7 @@ mask:
 
 # Loading Animation
 preloader:
-  enable: true
+  enable: false
   # source
   # 1. fullpage-loading
   # 2. pace (progress bar)
@@ -844,8 +860,8 @@ beautify:
 # Global font settings
 # Don't modify the following settings unless you know how they work
 font:
-  global_font_size:
-  code_font_size:
+  global_font_size: 16px
+  code_font_size: 14px
   font_family:
   code_font_family:
 
@@ -864,7 +880,7 @@ hr_icon:
 # Typewriter Effect
 # https://github.com/disjukr/activate-power-mode
 activate_power_mode:
-  enable: true
+  enable: false
   colorful: true
   shake: true
   mobile: true
@@ -892,7 +908,7 @@ canvas_fluttering_ribbon:
 # canvas_nest
 # https://github.com/hustcc/canvas-nest.js
 canvas_nest:
-  enable: true
+  enable: false
   # Color of lines, default: '0,0,0'; RGB values: (R,G,B).(note: use ',' to separate.)
   color: "0,0,255"
   # The opacity of line (0~1)
@@ -916,7 +932,7 @@ click_heart:
 
 # Mouse click effects: words
 clickShowText:
-  enable: true
+  enable: false
   text:
     - I
     - LOVE
@@ -1087,6 +1103,7 @@ inject:
   bottom:
     - <div id="kagiel-player"></div>
     - <script src="https://unpkg.com/aplayer@1.10.1/dist/APlayer.min.js"></script>
+    - <script src="/js/appearance.js" defer></script>
     - |
       <script>
         document.addEventListener('DOMContentLoaded', function(){
@@ -1095,10 +1112,10 @@ inject:
             fixed: false,
             mini: false,
             autoplay: false,
-            theme: '#b7daff',
+            theme: '#426f98',
             loop: 'all',
             order: 'random',
-            preload: 'auto',
+            preload: 'metadata',
             volume: 0.7,
             mutex: true,
             listFolded: true,
