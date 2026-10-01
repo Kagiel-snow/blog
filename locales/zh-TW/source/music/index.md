@@ -2,10 +2,8 @@
 title: 音樂
 lang: zh-TW
 layout: page
+aside: false
+top_img: false
 ---
 
-這裡收錄了部落格使用的音樂：
-
-- [phonekisses](/music/phonekisses.mp3)
-- [nop](/music/nop.mp3)
-
+挑一首喜歡的歌，不趕時間地逛逛。

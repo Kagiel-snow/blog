@@ -26,6 +26,17 @@ function check(output = path.join(ROOT, 'public')) {
     $('[style]').each((_, el) => { for (const m of $(el).attr('style').matchAll(/url\(['"]?([^'"()]+)['"]?\)/g)) checkUrl(m[1], rel); });
     // Existing APlayer playlist resources are in inline scripts, not HTML src attributes.
     $('script:not([src])').each((_, el) => { for (const m of $(el).text().matchAll(/\b(?:url|cover)\s*:\s*['"]([^'"]+)['"]/g)) checkUrl(m[1], rel); });
+    if ($('#kagiel-player').length) {
+      try {
+        const tracks = JSON.parse($('#site-music-data').text());
+        if (!Array.isArray(tracks) || !tracks.length || new Set(tracks.map(t => t.id)).size !== tracks.length) throw new Error('empty or duplicate track IDs');
+        for (const track of tracks) {
+          if (![track.id, track.name, track.artist, track.url, track.cover].every(v => typeof v === 'string' && v.length)) throw new Error('incomplete track metadata');
+          checkUrl(track.url, rel); checkUrl(track.cover, rel);
+        }
+        for (const button of $('[data-track-id]').toArray()) if (!tracks.some(t => t.id === $(button).attr('data-track-id'))) throw new Error('unknown track button');
+      } catch (err) { errors.push(`${rel}: invalid music catalog (${err.message})`); }
+    }
   }
   for (const file of files(output).filter(f => f.endsWith('.css'))) {
     const rel = path.relative(output, file).split(path.sep).join('/');

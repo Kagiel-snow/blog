@@ -8,7 +8,7 @@
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && dock.open) { dock.open = false; summary.focus(); }
     });
-    document.addEventListener('click', event => { if (dock.open && !dock.contains(event.target)) dock.open = false; });
+    document.addEventListener('click', event => { if (dock.open && !dock.contains(event.target) && !event.target.closest('[data-track-id]')) dock.open = false; });
   }
   const toggle = document.querySelector('.mascot-toggle');
   if (!toggle) return;

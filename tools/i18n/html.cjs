@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const cheerio = require('cheerio');
 const { enhanceAppearance } = require('./appearance.cjs');
+const { renderSection } = require('./sections.cjs');
 const { locales, legacy, origin, write, escape, canonical, translations, targetFor, encodePath } = require('./lib.cjs');
 function switcher(record, records, locale) {
   return `<div class="menus_item i18n-menu"><span class="site-page group" tabindex="0" aria-label="${escape(locale.switch)}"><i class="fas fa-language fa-fw" aria-hidden="true"></i> ${escape(locale.label)} <i class="fas fa-chevron-down" aria-hidden="true"></i></span><ul class="menus_item_child">` + locales.map(l => {
@@ -70,6 +71,7 @@ function finalize(output, records) {
         $(el).text(JSON.stringify(data).replace(/</g, '\\u003c'));
       }
     });
+    renderSection($, record, locale);
     enhanceAppearance($, record, locale);
     const result = $.html();
     const reloaded = cheerio.load(result);

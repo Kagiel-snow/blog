@@ -3,7 +3,8 @@ title: リンク
 lang: ja
 layout: page
 type: link
+aside: false
+top_img: false
 ---
 
-リンク先はまだ登録していません。
-
+また訪ねたくなる場所のために。

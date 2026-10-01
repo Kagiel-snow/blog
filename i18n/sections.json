@@ -1,0 +1,46 @@
+{
+  "zh-CN": {
+    "music": ["随身听", "给今天留一点背景音乐。", "不赶时间，选一首喜欢的，陪你慢慢逛。"],
+    "musicBanner": ["最近，循环着这些歌", "有些旋律适合发呆，有些适合在写东西时轻轻放着。"],
+    "Gallery": ["光与雪的收藏", "把喜欢的风景，留在桌面上。", "蓝天、落雪和一点安静的留白。这里收着几张想反复看的画面。"],
+    "movies": ["小小放映室", "让画面慢下来。", "从收藏里挑出的动态壁纸片段，点开就能看。不自动播放，也不用赶着看完。"],
+    "link": ["隔壁的小站", "互联网很大，也可以很近。", "留一个位置，给值得常去的地方。"],
+    "about": ["你好，我是 Kagiel", "在这里，记录一点喜欢的事。", "喜欢小说、音乐、动漫和游戏，也想去更远的地方看看。这个小站用来安放生活、学习和偶尔冒出来的想法。"],
+    "tags": ["按心情找一篇", "从一个小小的关键词开始。", "安全、语言，或只是随手记下的几句话。"],
+    "categories": ["我的笔记分区", "慢慢学，慢慢记。", "把零散的想法收进不同抽屉，下次再来翻翻。"],
+    "play":"播放", "listen":"正在播放", "open":"查看原图", "all":"全部", "sky":"天空与云", "snow":"冬日与雪", "white":"纯白留白", "filter":"筛选图片", "galleryNote":"图片来自个人壁纸收藏；标题是本站为整理画面所起的名字。", "videoNote":"个人收藏的动态壁纸片段，非完整动画作品。", "tracks":"首歌", "pictures":"幅画面", "clips":"段影像", "profile":"关于这个角落", "interests":["音乐与故事","动漫与游戏","学习与记录"], "mail":"给我写信", "reading":"翻翻我的日记", "resources":"常用的路标", "friendTitle":"给未来的邻居留个座位", "friendText":"还没有添加正式友链。如果你也在认真照顾自己的小站，欢迎来打个招呼。", "siteText":"你可以在这里找到随笔、音乐和壁纸。更新不必很密集，想留下来的东西，就慢慢写下来。", "routeText":["读一些轻松的小笔记","让音乐陪你一会儿","换一张喜欢的背景"], "timeline":"这个小站的足迹", "timelineItems":[["2026.08","第一声招呼","写下第一篇测试文章，小站开始有了声音。"],["2026.09","多几种相遇的方式","整理四语言版本，也慢慢把蓝白灰的风格定了下来。"],["2026.10","把喜欢的东西放进来","补上歌单、壁纸和三篇学习随笔。"]], "resourceDescriptions":["这个博客使用的静态站点工具。","陪着小站一起生长的主题。","找一个生活场景，听一点日语。"]
+  },
+  "zh-TW": {
+    "music":["隨身聽","留一點音樂，陪今天慢慢走。","挑一首喜歡的歌，不趕時間地逛逛。"],
+    "musicBanner": ["最近，反覆聽的幾首歌", "有些旋律適合放空，有些適合寫字時輕輕播著。"],
+    "Gallery":["光與雪的收藏","把喜歡的風景，留在桌面上。","藍天、落雪，還有一點安靜的留白。幾張想一看再看的畫面，都收在這裡。"],
+    "movies":["小小放映室","讓畫面慢下來。","從收藏中挑出的動態桌布片段。點開再播放，想停就停。"],
+    "link":["隔壁的小站","網路很大，也可以很近。","留一個角落，給值得常去的地方。"],
+    "about":["嗨，我是 Kagiel","記下一點喜歡的事。","喜歡小說、音樂、動畫和遊戲，也夢想去更遠的地方看看。這個小站收著生活、學習，以及偶爾冒出的念頭。"],
+    "tags":["跟著心情找文章","從一個小小的關鍵字開始。","資訊安全、語言，或只是隨手記下的幾句話。"],
+    "categories":["筆記的抽屜","慢慢學，慢慢記。","把零散的想法分好，下次想起來，再打開看看。"],
+    "play":"播放", "listen":"正在播放", "open":"查看原圖", "all":"全部", "sky":"天空與雲", "snow":"冬日與雪", "white":"純白留白", "filter":"篩選圖片", "galleryNote":"圖片來自個人桌布收藏；標題是本站整理時所取的名字。", "videoNote":"個人收藏的動態桌布片段，並非完整動畫作品。", "tracks":"首歌", "pictures":"幅畫面", "clips":"段影像", "profile":"關於這個角落", "interests":["音樂與故事","動畫與遊戲","學習與記錄"], "mail":"寫信給我", "reading":"翻翻我的日記", "resources":"常用的路標", "friendTitle":"給未來的鄰居留個位子", "friendText":"目前還沒有正式友站連結。如果你也用心經營自己的小站，歡迎來打聲招呼。", "siteText":"這裡有隨筆、音樂和桌布。不急著追求更新頻率，想留下的事，就慢慢寫。", "routeText":["讀幾篇輕鬆的小筆記","讓音樂陪你一會兒","換張喜歡的桌布"], "timeline":"小站走過的路", "timelineItems":[["2026.08","第一聲招呼","第一篇測試文章，讓小站開始有了聲音。"],["2026.09","多幾種相遇的方式","整理四語版本，慢慢定下藍白灰的風格。"],["2026.10","放進喜歡的東西","補上歌單、桌布和三篇學習隨筆。"]], "resourceDescriptions":["這個部落格使用的靜態網站工具。","陪小站一起成長的主題。","挑一個生活情境，聽一點日文。"]
+  },
+  "ja": {
+    "music":["小さな音楽棚","今日の背景に、一曲。","好きな曲を選んで、ゆっくりしていってください。"],
+    "musicBanner": ["最近、くり返し聴いている曲", "ぼんやりしたいときも、何かを書いているときも。"],
+    "Gallery":["光と雪のアルバム","好きな景色を、デスクトップに。","青空と雪、静かな余白。何度も眺めたくなる壁紙を集めました。"],
+    "movies":["小さな上映室","少しだけ、ひと休み。","コレクションから選んだ動く壁紙です。見たいときに再生して、のんびりどうぞ。"],
+    "link":["おとなりのサイト","広いネットの、小さなつながり。","また訪ねたくなる場所のために。"],
+    "about":["こんにちは、Kagiel です","好きなことを、少しずつ。","小説、音楽、アニメ、ゲームが好きです。いつか遠くまで旅をするのも夢。このブログには、日々のことや学んだこと、ふと思いついたことを置いています。"],
+    "tags":["気になる言葉から","小さなキーワードを入口に。","セキュリティ、日本語、何でもない日のメモ。"],
+    "categories":["ノートの引き出し","学んだことを、ゆっくり残す。","思いついたことを整理して、また読み返せるように。"],
+    "play":"再生", "listen":"再生中", "open":"元の画像を見る", "all":"すべて", "sky":"空と雲", "snow":"冬と雪", "white":"白い余白", "filter":"画像の絞り込み", "galleryNote":"個人の壁紙コレクションです。タイトルは整理のために付けたものです。", "videoNote":"動く壁紙の短い映像です。アニメ本編ではありません。", "tracks":"曲", "pictures":"枚", "clips":"本", "profile":"この場所について", "interests":["音楽と物語","アニメとゲーム","学びと記録"], "mail":"メールを書く", "reading":"日記を読む", "resources":"よく使う道しるべ", "friendTitle":"これから出会う、おとなりさんへ", "friendText":"相互リンクはまだありません。ご自身のサイトを大切に育てている方、よかったら声をかけてください。", "siteText":"ここにあるのは日記と音楽と壁紙。更新を急ぐより、残したいことを少しずつ書いていけたらと思います。", "routeText":["気軽な学びのメモを読む","音楽と一緒にひと休み","お気に入りの壁紙を探す"], "timeline":"小さな歩み", "timelineItems":[["2026.08","はじめのごあいさつ","最初のテスト記事から、この場所が始まりました。"],["2026.09","いろいろな言葉で","四言語のページを整え、青と白とグレーを基調に。"],["2026.10","好きなものを並べて","曲、壁紙、三つの学びのメモを追加しました。"]], "resourceDescriptions":["このブログを生成しているツール。","ブログを彩ってくれるテーマ。","生活の場面から日本語に触れる教材。"]
+  },
+  "en": {
+    "music":["A small listening room","A soundtrack for an unhurried day.","Pick a song, settle in, and stay a little while."],
+    "musicBanner": ["On repeat lately", "A few songs for quiet thoughts, loose pages, and doing very little."],
+    "Gallery":["Light, snow & quiet skies","A little scenery for your desktop.","Blue skies, winter days, and room to breathe. A few wallpapers worth coming back to."],
+    "movies":["The little screening room","Let the world slow down.","Moving wallpapers from my collection. Press play when you're ready; there's no hurry."],
+    "link":["Neighbouring corners","A big web, small connections.","A place for sites worth visiting again."],
+    "about":["Hi, I'm Kagiel","A home for the things I enjoy.","Fiction, music, anime, and games—and a dream of travelling further afield. This blog holds little pieces of life, things I'm learning, and thoughts I'd like to keep."],
+    "tags":["Follow a small curiosity","Let a keyword lead the way.","Security, Japanese, or just a thought I wanted to write down."],
+    "categories":["The notebook drawers","Learn a little. Keep a note.","Loose thoughts, with somewhere to come back to."],
+    "play":"Play", "listen":"Now playing", "open":"View original", "all":"All", "sky":"Sky & clouds", "snow":"Winter & snow", "white":"Quiet whites", "filter":"Filter images", "galleryNote":"From my personal wallpaper collection. The titles are labels chosen for this gallery.", "videoNote":"Short moving wallpapers from my collection, not full anime episodes.", "tracks":"tracks", "pictures":"images", "clips":"clips", "profile":"About this corner", "interests":["Music & stories","Anime & games","Learning & notes"], "mail":"Write to me", "reading":"Read the journal", "resources":"Useful signposts", "friendTitle":"A seat for future neighbours", "friendText":"No blog friends listed yet. If you're looking after a little site of your own, feel free to say hello.", "siteText":"You'll find notes, music, and wallpapers here. I'd rather write when there's something I want to keep than chase a posting schedule.", "routeText":["Read a few relaxed notes","Stay for a little music","Find a new background"], "timeline":"Small steps along the way", "timelineItems":[["2026.08","A first hello","The first test post gave this little place a voice."],["2026.09","More ways to meet","Four languages, and a palette of blue, white, and grey."],["2026.10","Making room for favourites","Songs, wallpapers, and three learning notes joined the site."]], "resourceDescriptions":["The static site generator behind this blog.","The theme that gives this place its shape.","Japanese learning materials built around everyday situations."]
+  }
+}

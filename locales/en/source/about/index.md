@@ -2,7 +2,8 @@
 title: About
 lang: en
 layout: page
+aside: false
+top_img: false
 ---
 
-This is Kagiel's personal blog: a place for everyday moments, things I'm learning, and interests I enjoy sharing.
-
+Fiction, music, anime, and games—and a dream of travelling further afield. This blog holds little pieces of life, things I'm learning, and thoughts I'd like to keep.

@@ -68,7 +68,7 @@ test('full isolated build: missing translations, empty locale, taxonomies, draft
   const nested = records.find(r => r.lang === 'en' && r.key === 'category:tech/web');
   assert.equal(nested.url, '/en/categories/tech/web/');
   const englishPosts = records.filter(r => r.lang === 'en' && r.kind === 'post');
-  assert.equal(englishPosts.length, 2);
+  assert.equal(englishPosts.length, inspectContent(ROOT).filter(p => p.post && p.locale.id === 'en' && p.published !== false).length + 1);
   for (const post of englishPosts) {
     const $ = cheerio.load(fs.readFileSync(path.join(output, post.output), 'utf8'));
     const expected = records.find(r => r.lang === 'zh-CN' && r.key === post.key);
@@ -78,7 +78,20 @@ test('full isolated build: missing translations, empty locale, taxonomies, draft
   assert.match($('pre').text(), /const message = "<中文 & English>";/);
   assert.match($('#article-container').text(), /E=mc\^2/);
   for (const f of files(path.join(ROOT, 'source/img'))) {
-    assert.deepEqual(fs.readFileSync(path.join(output, 'img', path.basename(f))), fs.readFileSync(f));
+    assert.deepEqual(fs.readFileSync(path.join(output, path.relative(path.join(ROOT, 'source'), f))), fs.readFileSync(f));
+  }
+  const catalog = require('../../source/data/collections.json');
+  for (const locale of locales) {
+    const music = cheerio.load(fs.readFileSync(path.join(output, locale.root, 'music/index.html'), 'utf8'));
+    const gallery = cheerio.load(fs.readFileSync(path.join(output, locale.root, 'Gallery/index.html'), 'utf8'));
+    const cinema = cheerio.load(fs.readFileSync(path.join(output, locale.root, 'movies/index.html'), 'utf8'));
+    assert.equal(music('body').attr('data-section'), 'music');
+    assert.equal(music('.track-play').length, catalog.tracks.length);
+    assert.deepEqual(JSON.parse(music('#site-music-data').text()), catalog.tracks);
+    assert.equal(music('.collection-comments #post-comment').length, 1);
+    assert.equal(gallery('.wallpaper-card').length, catalog.images.length);
+    for (const picture of catalog.images) assert.ok(gallery('img').toArray().some(el => gallery(el).attr('alt') === picture.title[locale.id]));
+    assert.equal(cinema('video[controls]:not([autoplay])').length, catalog.videos.length);
   }
   const server = createServer(output);
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -90,6 +103,16 @@ test('full isolated build: missing translations, empty locale, taxonomies, draft
     assert.match(await error.text(), /ページが見つかりません/);
     const range = await fetch(base + '/music/nop.mp3', { headers: { Range: 'bytes=0-15' } });
     assert.equal(range.status, 206); assert.equal((await range.arrayBuffer()).byteLength, 16);
+    for (const track of catalog.tracks) {
+      const media = await fetch(base + track.url, { headers: { Range: 'bytes=0-15' } });
+      assert.equal(media.status, 206); assert.equal(media.headers.get('content-type'), 'audio/mpeg');
+      assert.equal((await media.arrayBuffer()).byteLength, 16);
+    }
+    for (const clip of catalog.videos) {
+      const media = await fetch(base + clip.url, { headers: { Range: 'bytes=0-15' } });
+      assert.equal(media.status, 206); assert.equal(media.headers.get('content-type'), 'video/mp4');
+      assert.equal((await media.arrayBuffer()).byteLength, 16);
+    }
     assert.equal((await fetch(base + '/2026/08/04/hello%20world/')).status, 200);
   } finally { await new Promise(resolve => server.close(resolve)); }
   console.log('Fixture output (retained for inspection): ' + output);

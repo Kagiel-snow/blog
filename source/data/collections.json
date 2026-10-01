@@ -1,0 +1,134 @@
+{
+  "tracks": [
+    {
+      "id": "coffee",
+      "name": "Coffee",
+      "artist": "beabadoobee",
+      "url": "/music/coffee.mp3",
+      "cover": "/img/sky-window.jpg"
+    },
+    {
+      "id": "time-machine",
+      "name": "time machine (feat. aren park)",
+      "artist": "mj apanay / aren park",
+      "url": "/music/timemachine.mp3",
+      "cover": "/img/gallery/blue-evening.jpg"
+    },
+    {
+      "id": "phonekisses",
+      "name": "phonekisses",
+      "artist": "Kagiel",
+      "url": "/music/phonekisses.mp3",
+      "cover": "/music/phonekisses.jpg"
+    },
+    {
+      "id": "nop",
+      "name": "nop",
+      "artist": "陈越龙",
+      "url": "/music/nop.mp3",
+      "cover": "/music/nop.jpg"
+    }
+  ],
+  "images": [
+    {
+      "id": "sky-window",
+      "url": "/img/sky-window.jpg",
+      "group": "sky",
+      "title": {
+        "zh-CN": "窗边，等一朵云",
+        "zh-TW": "在窗邊，等一朵雲",
+        "ja": "窓辺で雲を待つ",
+        "en": "Clouds by the window"
+      },
+      "width": 4320,
+      "height": 2236
+    },
+    {
+      "id": "snowfall",
+      "url": "/img/snowfall.jpg",
+      "group": "snow",
+      "title": {
+        "zh-CN": "把冬天围在脖子上",
+        "zh-TW": "把冬天圍在脖子上",
+        "ja": "冬をくるむマフラー",
+        "en": "Wrapped in winter"
+      },
+      "width": 2358,
+      "height": 1308
+    },
+    {
+      "id": "blue-evening",
+      "url": "/img/gallery/blue-evening.jpg",
+      "group": "snow",
+      "title": {
+        "zh-CN": "蓝色的归途",
+        "zh-TW": "藍色的歸途",
+        "ja": "青い帰り道",
+        "en": "The blue hour home"
+      },
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": "white-wings",
+      "url": "/img/gallery/white-wings.jpg",
+      "group": "white",
+      "title": {
+        "zh-CN": "留一点白",
+        "zh-TW": "留一點白",
+        "ja": "余白のある午後",
+        "en": "Room for quiet"
+      },
+      "width": 3642,
+      "height": 2049
+    },
+    {
+      "id": "winter-shrine",
+      "url": "/img/gallery/winter-shrine.jpg",
+      "group": "snow",
+      "title": {
+        "zh-CN": "雪落在鸟居上",
+        "zh-TW": "雪落在鳥居上",
+        "ja": "鳥居に積もる雪",
+        "en": "Snow at the shrine"
+      },
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": "cloud-door",
+      "url": "/img/gallery/cloud-door.png",
+      "group": "sky",
+      "title": {
+        "zh-CN": "云的另一边",
+        "zh-TW": "雲的另一邊",
+        "ja": "雲の向こう側",
+        "en": "Beyond the clouds"
+      },
+      "width": 1920,
+      "height": 1080
+    }
+  ],
+  "videos": [
+    {
+      "id": "rainy-reading",
+      "url": "/videos/rainy-reading.mp4",
+      "title": {
+        "zh-CN": "雨声，书页与灯",
+        "zh-TW": "雨聲、書頁與燈",
+        "ja": "雨音と本と、灯り",
+        "en": "Rain, pages & lamplight"
+      }
+    },
+    {
+      "id": "city-lights",
+      "url": "/videos/city-lights.mp4",
+      "title": {
+        "zh-CN": "窗外，城市还醒着",
+        "zh-TW": "窗外，城市還醒著",
+        "ja": "窓の向こう、眠らない街",
+        "en": "The city is still awake"
+      }
+    }
+  ]
+}

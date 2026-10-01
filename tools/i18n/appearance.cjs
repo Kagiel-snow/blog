@@ -1,5 +1,6 @@
 'use strict';
 const { escape } = require('./lib.cjs');
+const collection = require('../../source/data/collections.json');
 
 // Enhance the generated theme DOM without forking Butterfly or touching articles.
 function enhanceAppearance($, record, locale) {
@@ -19,6 +20,7 @@ function enhanceAppearance($, record, locale) {
   });
   const player = $('#kagiel-player');
   if (!player.length) return;
+  $('body').append(`<script id="site-music-data" type="application/json">${JSON.stringify(collection.tracks).replace(/</g, '\\u003c')}</script>`);
   const t = locale.appearance;
   const dock = $(`<div class="site-tools"><details class="music-dock"><summary><i class="fas fa-music" aria-hidden="true"></i><span>${escape(t.music)}</span></summary><div class="music-panel"><div class="music-panel-heading"><span>${escape(t.player)}</span><button class="music-close" type="button" aria-label="${escape(t.close)}">×</button></div></div></details><button type="button" class="mascot-toggle" hidden aria-pressed="false" data-show="${escape(t.showMascot)}" data-hide="${escape(t.hideMascot)}"><i class="fas fa-star" aria-hidden="true"></i><span></span></button></div>`);
   player.before(dock);

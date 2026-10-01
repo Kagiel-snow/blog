@@ -2,10 +2,8 @@
 title: 音楽
 lang: ja
 layout: page
+aside: false
+top_img: false
 ---
 
-ブログで使っている曲をまとめました。
-
-- [phonekisses](/music/phonekisses.mp3)
-- [nop](/music/nop.mp3)
-
+好きな曲を選んで、ゆっくりしていってください。
