@@ -14,6 +14,10 @@
   --text-highlight-color: var(--snow-text); --card-meta: var(--snow-muted); --theme-color: var(--snow-blue);
 }
 body { background: var(--snow-bg); font-family: -apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; color: var(--snow-text); -webkit-font-smoothing: antialiased; }
+.service-status { color: var(--snow-muted); font-size: 14px; }
+.service-status:empty { display: none; }
+.service-retry { padding: 4px 10px; border: 1px solid var(--snow-border); border-radius: 6px; background: var(--snow-soft); color: var(--snow-blue); cursor: pointer; }
+.service-retry[hidden] { display: none; }
 #web_bg { background: var(--snow-bg) !important; }
 [data-theme='dark'] #web_bg::before { background: transparent; }
 html[lang='ja'] body { font-family: -apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif; }

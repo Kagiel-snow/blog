@@ -73,6 +73,7 @@ test('full isolated build: missing translations, empty locale, taxonomies, draft
     const $ = cheerio.load(fs.readFileSync(path.join(output, post.output), 'utf8'));
     const expected = records.find(r => r.lang === 'zh-CN' && r.key === post.key);
     assert.equal($('#menus [data-locale="zh-CN"]').attr('href'), expected.url);
+    assert.equal($('#twikoo-wrap').attr('data-comment-path'), expected.url);
   }
   const $ = cheerio.load(fs.readFileSync(path.join(output, 'en/posts/fixture-tech/index.html'), 'utf8'));
   assert.match($('pre').text(), /const message = "<中文 & English>";/);
@@ -89,6 +90,12 @@ test('full isolated build: missing translations, empty locale, taxonomies, draft
     assert.equal(music('.track-play').length, catalog.tracks.length);
     assert.deepEqual(JSON.parse(music('#site-music-data').text()), catalog.tracks);
     assert.equal(music('.collection-comments #post-comment').length, 1);
+    assert.equal(music('#twikoo-wrap').attr('data-comment-path'), '/music/');
+    assert.equal(music('#body-wrap #kagiel-player, .js-pjax #kagiel-player').length, 0);
+    assert.equal(music('#kagiel-player').length, 1);
+    assert.equal(music('script[data-pjax][src*="busuanzi"]').length, 0);
+    assert.match(music('#config-diff').text(), new RegExp('"lang":"' + locale.id + '"'));
+    assert.match(music('script').text(), /Pjax.switches.innerHTML/);
     assert.equal(gallery('.wallpaper-card').length, catalog.images.length);
     for (const picture of catalog.images) assert.ok(gallery('img').toArray().some(el => gallery(el).attr('alt') === picture.title[locale.id]));
     assert.equal(cinema('video[controls]:not([autoplay])').length, catalog.videos.length);

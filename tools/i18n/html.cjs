@@ -4,6 +4,8 @@ const path = require('node:path');
 const cheerio = require('cheerio');
 const { enhanceAppearance } = require('./appearance.cjs');
 const { renderSection } = require('./sections.cjs');
+const { enhanceNavigation, enhanceSearch } = require('./navigation.cjs');
+const { translationMenu, languageRedirects } = require('./translation.cjs');
 const { locales, legacy, origin, write, escape, canonical, translations, targetFor, encodePath } = require('./lib.cjs');
 function switcher(record, records, locale) {
   return `<div class="menus_item i18n-menu"><span class="site-page group" tabindex="0" aria-label="${escape(locale.switch)}"><i class="fas fa-language fa-fw" aria-hidden="true"></i> ${escape(locale.label)} <i class="fas fa-chevron-down" aria-hidden="true"></i></span><ul class="menus_item_child">` + locales.map(l => {
@@ -34,11 +36,11 @@ function finalize(output, records) {
     const defaultPeer = peers.find(r => r.lang === 'zh-CN');
     if (defaultPeer) $('head').append(`<link rel="alternate" hreflang="x-default" href="${escape(defaultPeer.canonical)}">`);
     if (record.noindex) $('head').append('<meta name="robots" content="noindex,follow">');
-    $('head').append(`<link rel="stylesheet" href="/css/i18n.css"><script src="/js/i18n.js" defer></script>`);
+    $('head').append(`<link rel="stylesheet" href="/css/i18n.css"><link rel="stylesheet" href="/css/translation.css"><script src="/js/translation.js" defer></script>`);
     $('body').attr('data-site-language', locale.id);
     const menus = $('#menus .menus_items, #sidebar-menus .menus_items');
     if (!menus.length) throw new Error(`Butterfly menu hook missing: ${record.output}`);
-    menus.append(switcher(record, records, locale));
+    menus.append(translationMenu(record));
     // A server-rendered notice and real links also work with JavaScript disabled.
     const notices = [...new Map(records.filter(r => !r.noindex && !records.some(p => p.key === r.key && p.lang === locale.id)).map(r => [r.key, r])).values()];
     if (record.kind === 'home' || /^page:(tags|categories)$/.test(record.key) || record.key === 'archive:archives/index.html') {
@@ -73,13 +75,16 @@ function finalize(output, records) {
     });
     renderSection($, record, locale);
     enhanceAppearance($, record, locale);
+    enhanceNavigation($, record, records, locale);
     const result = $.html();
     const reloaded = cheerio.load(result);
     if (JSON.stringify(originalCode) !== JSON.stringify(reloaded('pre').map((_, el) => reloaded(el).text()).get())) throw new Error(`Code changed during HTML processing: ${file}`);
     fs.writeFileSync(file, result);
   }
+  enhanceSearch(output);
+  languageRedirects(output, records);
   // Ordinary language links are static; JS only enhances the missing-version notice.
-  write(path.join(output, 'js/i18n.js'), `'use strict';\n(() => {\n  const key = new URLSearchParams(location.search).get('missing');\n  if (key) { const notice = document.getElementById('missing-' + key); if (notice) { notice.classList.add('is-visible'); notice.setAttribute('role', 'status'); } }\n})();\n`);
+  write(path.join(output, 'js/i18n.js'), `'use strict';\n(() => {\n  const showNotice = () => {\n    const key = new URLSearchParams(location.search).get('missing');\n    if (key) { const notice = document.getElementById('missing-' + key); if (notice) { notice.classList.add('is-visible'); notice.setAttribute('role', 'status'); } }\n  };\n  showNotice();\n  document.addEventListener('pjax:complete', showNotice);\n})();\n`);
   write(path.join(output, 'css/i18n.css'), `.i18n-menu:focus-within .menus_item_child{display:block!important}.i18n-menu .menus_item_child{min-width:10rem}.i18n-menu [aria-current=page]{font-weight:700}.i18n-notices:empty{display:none}.i18n-missing{display:none;scroll-margin-top:80px;margin:0 0 1rem;padding:1rem 1.4rem;background:var(--card-bg);border-radius:8px}.i18n-missing:target,.i18n-missing.is-visible{display:block}.i18n-missing a,.i18n-return a{color:var(--theme-color,#49b1f5)}.i18n-empty{padding:1rem}.i18n-empty p{margin:auto}\n`);
   for (const [old, target] of Object.entries(legacy)) {
     const dest = target.endsWith('/') ? target.slice(1) + 'index.html' : target.slice(1);

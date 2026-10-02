@@ -1,6 +1,7 @@
 [
   {
     "id": "zh-CN", "label": "简体中文", "root": "/", "source": "source",
+    "services": { "loading": "加载中…", "unavailable": "暂不可用", "statsUnavailable": "统计服务暂时无法连接，请稍后重试。", "loadingComments": "正在加载评论…", "commentsUnavailable": "评论暂时无法加载。", "retry": "重试" },
     "description": "Like snow", "keywords": "宅,动漫,游戏,小说,漫画,音乐,网络安全",
     "menu": ["首页", "时间轴", "标签", "分类", "收藏", "音乐", "图片", "动画", "友链", "关于"],
     "menuLabels": { "文章": "文章" },
@@ -15,6 +16,7 @@
   },
   {
     "id": "zh-TW", "label": "繁體中文", "root": "/zh-tw/", "source": "locales/zh-TW/source",
+    "services": { "loading": "載入中…", "unavailable": "暫時無法使用", "statsUnavailable": "暫時無法連線至統計服務，請稍後重試。", "loadingComments": "正在載入留言…", "commentsUnavailable": "暫時無法載入留言。", "retry": "重試" },
     "description": "如雪一般，記下生活的片刻。", "keywords": "動畫,遊戲,小說,漫畫,音樂,資訊安全",
     "menu": ["首頁", "文章彙整", "標籤", "分類", "收藏", "音樂", "圖片", "動畫", "友站連結", "關於"],
     "menuLabels": { "文章": "文章" },
@@ -29,6 +31,7 @@
   },
   {
     "id": "ja", "label": "日本語", "root": "/ja/", "source": "locales/ja/source",
+    "services": { "loading": "読み込み中…", "unavailable": "取得できません", "statsUnavailable": "アクセス集計に接続できません。しばらくしてから再試行してください。", "loadingComments": "コメントを読み込み中…", "commentsUnavailable": "コメントを読み込めませんでした。", "retry": "再試行" },
     "description": "日々のこと、学んだこと。Kagiel の小さな記録。", "keywords": "アニメ,ゲーム,小説,漫画,音楽,情報セキュリティ",
     "menu": ["ホーム", "アーカイブ", "タグ", "カテゴリー", "コレクション", "音楽", "写真", "アニメ", "リンク", "このブログについて"],
     "menuLabels": { "文章": "記事" },
@@ -43,6 +46,7 @@
   },
   {
     "id": "en", "label": "English", "root": "/en/", "source": "locales/en/source",
+    "services": { "loading": "Loading…", "unavailable": "Unavailable", "statsUnavailable": "Visit statistics are temporarily unavailable. Please try again later.", "loadingComments": "Loading comments…", "commentsUnavailable": "Comments could not be loaded.", "retry": "Retry" },
     "description": "Notes on life, learning, and the things I enjoy. By Kagiel.", "keywords": "anime,games,fiction,manga,music,information security",
     "menu": ["Home", "Archive", "Tags", "Categories", "Collections", "Music", "Images", "Anime", "Links", "About"],
     "menuLabels": { "文章": "Posts" },

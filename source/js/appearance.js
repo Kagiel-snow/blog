@@ -23,6 +23,7 @@
     toggle.title = label;
   };
   update();
+  document.addEventListener('pjax:complete', update);
   toggle.addEventListener('click', () => {
     hidden = !hidden; update();
     try { localStorage.setItem('kagiel:mascot-hidden', String(hidden)); } catch { /* Keep the session preference. */ }

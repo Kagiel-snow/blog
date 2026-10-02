@@ -1,0 +1,7 @@
+.translation-hint{padding:6px 12px;font-size:12px;color:var(--font-color);opacity:.7;white-space:nowrap}
+.i18n-menu [aria-current=true]{font-weight:700;color:var(--theme-color,#49b1f5)}
+.translation-notice{position:fixed;z-index:110;top:76px;right:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:min(540px,calc(100vw - 40px));padding:9px 14px;border:1px solid var(--light-grey,#dce5ed);border-radius:12px;background:var(--card-bg,#fff);color:var(--font-color,#333);box-shadow:0 4px 18px #143e5912;font-size:12px;line-height:1.5}
+.translation-notice[hidden],.translation-notice button[hidden]{display:none}
+.translation-notice button{padding:2px 4px;color:var(--theme-color,#1680b8);background:none;border:0;cursor:pointer;font:inherit;text-decoration:underline;text-underline-offset:3px}
+.translation-notice button:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+@media(max-width:600px){.translation-notice{top:auto;bottom:78px;left:12px;right:12px;max-width:none;font-size:11px;gap:6px}}

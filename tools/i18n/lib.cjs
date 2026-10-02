@@ -5,7 +5,9 @@ const yaml = require('js-yaml');
 const matter = require('hexo-front-matter');
 const crypto = require('node:crypto');
 const ROOT = path.resolve(__dirname, '../..');
-const locales = require('../../i18n/locales.json');
+const allLocales = require('../../i18n/locales.json');
+// Only Chinese is published; the language menu translates this source on demand.
+const locales = allLocales.filter(l => l.id === 'zh-CN');
 const taxonomy = require('../../i18n/taxonomies.json');
 const legacy = require('../../i18n/legacy-routes.json');
 const config = yaml.load(fs.readFileSync(path.join(ROOT, '_config.yml'), 'utf8'));
@@ -115,4 +117,4 @@ function inspectContent(contentRoot = ROOT) {
   }
   return docs;
 }
-module.exports = { ROOT, locales, taxonomy, loadTaxonomy, legacy, config, origin, slash, files, write, within, readPost, escape, encodePath, documentKey, taxonomyKey, routeUrl, canonical, translations, targetFor, protectedParts, inspectContent };
+module.exports = { ROOT, locales, allLocales, taxonomy, loadTaxonomy, legacy, config, origin, slash, files, write, within, readPost, escape, encodePath, documentKey, taxonomyKey, routeUrl, canonical, translations, targetFor, protectedParts, inspectContent };

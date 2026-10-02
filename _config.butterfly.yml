@@ -1024,7 +1024,7 @@ note:
 
 # https://github.com/MoOx/pjax
 pjax:
-  enable: false
+  enable: true
   # Exclude the specified pages from pjax, such as '/music/'
   exclude:
     # - /xxxxxx/
@@ -1104,6 +1104,8 @@ inject:
   bottom:
     - <div id="kagiel-player"></div>
     - <script src="https://unpkg.com/aplayer@1.10.1/dist/APlayer.min.js"></script>
+    - <script src="/js/navigation.js" defer></script>
+    - <script src="/js/services.js" defer></script>
     - <script src="/js/appearance.js" defer></script>
     - <script src="/js/music.js" defer></script>
     - <script src="/js/sections.js" defer></script>

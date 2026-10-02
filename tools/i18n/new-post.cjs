@@ -7,7 +7,7 @@ const { ROOT, locales, files, readPost, within, write } = require('./lib.cjs');
 function createPost({ key, lang = 'zh-CN', title, contentRoot = ROOT }) {
   if (!/^[a-z0-9][a-z0-9-]*$/.test(key || '')) throw new Error('Use a stable lowercase key, for example hello-blog.');
   const locale = locales.find(l => l.id === lang);
-  if (!locale) throw new Error('Supported languages: zh-CN, zh-TW, ja, en');
+  if (!locale) throw new Error('只需维护中文原文（zh-CN），其他语言由页面上的翻译按钮提供。');
   const directory = path.join(contentRoot, locale.source, '_posts');
   if (files(directory).some(f => /\.md$/i.test(f) && readPost(f).translation_key === key)) throw new Error(`${key} already exists in ${lang}; nothing overwritten.`);
   const file = within(directory, path.join(directory, key + '.md'));
@@ -30,11 +30,11 @@ if (require.main === module) {
     const options = { key };
     while (args.length) {
       const arg = args.shift();
-      if (!['--lang', '--title'].includes(arg) || !args.length) throw new Error('Usage: npm run post:new -- my-post --lang en --title "My title"');
+      if (!['--lang', '--title'].includes(arg) || !args.length) throw new Error('Usage: npm run post:new -- my-post --title "文章标题"');
       options[arg.slice(2)] = args.shift();
     }
     console.log('Draft created: ' + createPost(options));
-    console.log('Edit/localize prose, title and taxonomy; preserve technical fragments. Set published: true only after review.');
+    console.log('写好这份中文草稿后，设置 published: true。无需再写其他语言版本。');
   } catch (e) { console.error(e.message); process.exitCode = 1; }
 }
 module.exports = { createPost };
