@@ -10,8 +10,12 @@
   const excluded = 'script,style,noscript,pre,code,kbd,samp,textarea,input,select,svg,math,iframe,[contenteditable],[translate="no"],.notranslate,.katex,.MathJax,mjx-container,.i18n-menu,.translation-notice,#site-comments,#post-comment,.service-status,[data-retry-stats],[id^="busuanzi"],#kagiel-player,.track-body h2,.track-body p,.local-search-input,.search-result-list';
   const nodes = new Map();
   let cache = new Map();
-  try { cache = new Map(JSON.parse(sessionStorage.getItem('site-translation-cache-v1') || '[]')); } catch {}
-  let language = 'zh-CN', generation = 0, navigating = false, running = false, queued = false, timer, library;
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('site-translation-cache-v1') || '[]');
+    if (Array.isArray(saved)) cache = new Map(saved.filter(item => Array.isArray(item) && typeof item[0] === 'string' && typeof item[1] === 'string' && item[1].trim()).slice(-1200));
+  } catch {}
+  let language = 'zh-CN', generation = 0, navigating = false, running = false, queued = false, timer;
+  let cancelRequest = () => {};
   const cacheKey = (lang, text) => lang + '\n' + text;
   const savedLanguage = () => { try { return localStorage.getItem('site-reading-language'); } catch { return null; } };
   const selectedLanguage = () => {
@@ -67,35 +71,25 @@
     for (const [node, entry] of nodes) put(node, entry, entry.source);
     document.documentElement.lang = 'zh-CN';
   }
-  function loadLibrary() {
-    if (window.translate) return Promise.resolve(window.translate);
-    if (library) return library;
-    library = new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      const fail = () => { clearTimeout(timeout); script.remove(); library = null; reject(new Error('Translation library unavailable')); };
-      const timeout = setTimeout(fail, 10000);
-      script.src = '/vendor/translate/translate-3.5.1.js';
-      script.onload = () => { clearTimeout(timeout); resolve(window.translate); };
-      script.onerror = fail;
-      document.head.append(script);
-    });
-    return library;
-  }
   async function request(texts, lang) {
-    const api = await loadLibrary();
-    // Use only the text API. The library never scans the DOM, refreshes the page,
-    // initializes its public server, or handles language selection for this site.
-    api.service.use('client.edge');
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Translation timed out')), 15000);
-      api.request.post(api.request.api.translate, {
-        from: 'chinese_simplified', to: languages[lang].service, text: encodeURIComponent(JSON.stringify(texts))
-      }, result => {
-        clearTimeout(timeout);
-        if (result?.result !== 1 || !Array.isArray(result.text) || result.text.length !== texts.length || result.text.some(v => typeof v !== 'string' || !v.trim())) reject(new Error('Invalid translation response'));
-        else resolve(result.text);
+    // Current client.edge protocol, verified against xnx3/translate revision
+    // d0dc1c73adf951b029fb6244d8b97d0ef2040075. No remote script or API key.
+    const controller = new AbortController();
+    const abort = () => controller.abort(); cancelRequest = abort;
+    const timeout = setTimeout(abort, 15000);
+    const target = lang === 'zh-TW' ? 'zh-CHT' : lang;
+    try {
+      const response = await fetch('https://edge.microsoft.com/translate/translatetext?from=zh-CHS&to=' + target + '&isEnterpriseClient=false', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(texts), signal: controller.signal, credentials: 'omit', referrerPolicy: 'no-referrer'
       });
-    });
+      if (!response.ok) throw new Error('Translation unavailable');
+      const result = await response.json();
+      if (!Array.isArray(result) || result.length !== texts.length) throw new Error('Invalid translation response');
+      const values = result.map(item => item.translations?.[0]?.text);
+      if (values.some(v => typeof v !== 'string' || !v.trim())) throw new Error('Invalid translation text');
+      return values;
+    } finally { clearTimeout(timeout); if (cancelRequest === abort) cancelRequest = () => {}; }
   }
   async function run() {
     if (navigating) return;
@@ -138,7 +132,7 @@
   function schedule() { clearTimeout(timer); if (!navigating) timer = setTimeout(run, 180); }
   function choose(lang, updateUrl = true) {
     if (!Object.hasOwn(languages, lang)) return;
-    generation++; restore(); language = lang;
+    generation++; cancelRequest(); restore(); language = lang;
     try { localStorage.setItem('site-reading-language', lang); } catch {}
     if (updateUrl) {
       const url = new URL(location.href); url.searchParams.set('lang', lang);
@@ -156,7 +150,7 @@
     if (event.target.closest('[data-translation-original]')) choose('zh-CN');
     if (event.target.closest('[data-translation-retry]')) schedule();
   });
-  document.addEventListener('pjax:send', () => { navigating = true; generation++; clearTimeout(timer); });
+  document.addEventListener('pjax:send', () => { navigating = true; generation++; cancelRequest(); clearTimeout(timer); });
   document.addEventListener('pjax:complete', () => { navigating = false; choose(selectedLanguage(), false); });
   document.addEventListener('pjax:error', () => { navigating = false; schedule(); });
   // Translate later public content (e.g. the subtitle), but never our own changes.

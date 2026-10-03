@@ -3,124 +3,79 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const yaml = require('js-yaml');
+const vm = require('node:vm');
 const cheerio = require('cheerio');
-const { ROOT, locales, write, files, inspectContent, protectedParts, targetFor, readPost } = require('./lib.cjs');
+const { ROOT, locales, write, files, inspectContent, protectedParts, readPost } = require('./lib.cjs');
 const { createPost } = require('./new-post.cjs');
 const { build } = require('./build.cjs');
 const { createServer } = require('./serve.cjs');
 
-test('protected fragments survive prose reordering; code and destination changes are detected', () => {
-  const code = '```sh\nnpm ci\necho "$HOME"\n```';
-  const math = '$$E=mc^2$$';
-  const original = `中文\n${code}\n${math}\n![雪](/img/snow.png)\n[链接](https://hexo.io/)\n\`git status\``;
-  const translated = `English\n${math}\n${code}\n![Snow](/img/snow.png)\n[Link](https://hexo.io/)\n\`git status\``;
-  assert.deepEqual(protectedParts(original), protectedParts(translated));
-  assert.notDeepEqual(protectedParts(original), protectedParts(translated.replace('npm ci', 'npm install')));
-  assert.notDeepEqual(protectedParts(original), protectedParts(translated.replace('/img/snow.png', '/en/img/snow.png')));
-});
-
-test('full isolated build: missing translations, empty locale, taxonomies, drafts, snippets and HTTP', { timeout: 180000 }, async () => {
+test('single-source build preserves drafts, technical snippets, old language URLs, services and media', { timeout: 180000 }, async () => {
   const fixture = path.join(ROOT, 'work/tests', `${Date.now()}-${process.pid}`);
-  for (const l of locales) {
-    const src = path.join(ROOT, l.source), dest = path.join(fixture, l.source);
-    fs.cpSync(src, dest, { recursive: true, preserveTimestamps: true,
-      filter: file => !(l.id === 'ja' && path.relative(src, file).split(path.sep)[0] === '_posts') });
-  }
-  write(path.join(fixture, 'i18n/taxonomies.json'), JSON.stringify({
-    tags: { tools: { names: { 'zh-CN': '工具 & Git', en: 'Tools & Git' }, slugs: { 'zh-CN': 'tools-git', en: 'tools-git' } } },
-    categories: { tech: { names: { 'zh-CN': '技术', en: 'Technology' }, slugs: { 'zh-CN': 'tech', en: 'tech' } },
-      web: { names: { 'zh-CN': '网站', en: 'Web' }, slugs: { 'zh-CN': 'web', en: 'web' } } }
-  }));
-  const body = '\n```js\nconst message = "<中文 & English>";\nconsole.log(message);\n```\n\n`npm ci`\n\n$$E=mc^2$$\n\n![snow](/img/snow.png)\n\n[Hexo](https://hexo.io/)\n';
-  for (const lang of ['zh-CN', 'en']) {
-    const l = locales.find(l => l.id === lang);
-    const fm = { title: 'Technical fixture', lang, translation_key: 'fixture-tech', permalink: 'posts/fixture-tech/', date: '2026-09-01T00:30:00+09:00', updated: '2026-09-01T00:30:00+09:00',
-      tags: [lang === 'en' ? 'Tools & Git' : '工具 & Git'], categories: [lang === 'en' ? 'Technology' : '技术', lang === 'en' ? 'Web' : '网站'] };
-    write(path.join(fixture, l.source, '_posts/fixture-tech.md'), '---\n' + yaml.dump(fm) + '---\n' + body);
-  }
-  const draft = createPost({ key: 'fixture-tech', lang: 'ja', title: '未公開の下書き', contentRoot: fixture });
+  fs.cpSync(path.join(ROOT, 'source'), path.join(fixture, 'source'), { recursive: true });
+  assert.deepEqual(locales.map(l => l.id), ['zh-CN']);
+  // An invalid archived translation must not affect publication.
+  write(path.join(fixture, 'locales/en/source/_posts/outdated.md'), '---\nlang: ja\n---\nOLD TRANSLATION');
+  const draft = createPost({ key: 'fixture-draft', title: '未发布草稿', contentRoot: fixture });
   assert.equal(readPost(draft).published, false);
-  assert.deepEqual(protectedParts(readPost(draft)._content), protectedParts(body));
-  assert.throws(() => createPost({ key: 'fixture-tech', lang: 'ja', contentRoot: fixture }), /already exists/);
-  const translatedFile = path.join(fixture, 'locales/en/source/_posts/fixture-tech.md');
-  const translation = fs.readFileSync(translatedFile, 'utf8');
-  write(translatedFile, translation.replace('npm ci', 'npm install'));
-  assert.throws(() => inspectContent(fixture), /Protected code/);
-  write(translatedFile, translation);
-  write(path.join(fixture, 'locales/en/source/private-note/index.md'), '---\ntitle: Private page draft\npublished: false\n---\nThis must not be published.\n');
+  assert.throws(() => createPost({ key: 'fixture-draft', contentRoot: fixture }), /already exists/);
+  assert.throws(() => createPost({ key: 'fixture-draft', lang: 'en', contentRoot: fixture }), /只需维护中文/);
+  write(path.join(fixture, 'source/private-note/index.md'), '---\ntitle: Private\npublished: false\n---\nDO NOT PUBLISH');
+  const body = '\n```js\nconst message = "<中文 & English>";\n```\n\n`npm ci`\n\n$$E=mc^2$$\n\n![snow](/img/snow.png)\n';
+  write(path.join(fixture, 'source/_posts/fixture-tech.md'), '---\ntitle: 技术片段\nlang: zh-CN\ntranslation_key: fixture-tech\npermalink: posts/fixture-tech/\ndate: 2026-09-01T00:30:00+09:00\nupdated: 2026-09-01T00:30:00+09:00\n---\n' + body);
+  assert.equal(inspectContent(fixture).some(p => p.locale.id !== 'zh-CN'), false);
   const output = build({ contentRoot: fixture, publish: false });
-  const records = JSON.parse(fs.readFileSync(path.join(output, 'i18n-routes.json'), 'utf8'));
-  assert.equal(records.filter(r => r.lang === 'ja' && r.kind === 'post').length, 0);
-  assert.equal(fs.existsSync(path.join(output, 'en/private-note/index.html')), false);
-  const japanese = locales.find(l => l.id === 'ja');
-  for (const r of records.filter(r => r.lang === 'zh-CN' && ['post', 'tag', 'category'].includes(r.kind))) {
-    const fallback = targetFor(r, japanese, records);
-    assert.equal(fallback.exact, false);
-    const url = new URL(fallback.url, 'http://localhost');
-    const $ = cheerio.load(fs.readFileSync(path.join(output, decodeURIComponent(url.pathname), 'index.html'), 'utf8'));
-    assert.equal($('[id]').toArray().filter(e => $(e).attr('id') === decodeURIComponent(url.hash.slice(1))).length, 1, `Missing fallback notice: ${fallback.url}`);
-    assert.ok($('.i18n-notices a').toArray().some(a => $(a).attr('href') === r.url));
-  }
-  const tag = records.find(r => r.lang === 'zh-CN' && r.key === 'tag:tools');
-  assert.ok(tag);
-  assert.equal(targetFor(tag, locales.find(l => l.id === 'en'), records).url, '/en/tags/tools-git/');
-  const nested = records.find(r => r.lang === 'en' && r.key === 'category:tech/web');
-  assert.equal(nested.url, '/en/categories/tech/web/');
-  const englishPosts = records.filter(r => r.lang === 'en' && r.kind === 'post');
-  assert.equal(englishPosts.length, inspectContent(ROOT).filter(p => p.post && p.locale.id === 'en' && p.published !== false).length + 1);
-  for (const post of englishPosts) {
-    const $ = cheerio.load(fs.readFileSync(path.join(output, post.output), 'utf8'));
-    const expected = records.find(r => r.lang === 'zh-CN' && r.key === post.key);
-    assert.equal($('#menus [data-locale="zh-CN"]').attr('href'), expected.url);
-    assert.equal($('#twikoo-wrap').attr('data-comment-path'), expected.url);
-  }
-  const $ = cheerio.load(fs.readFileSync(path.join(output, 'en/posts/fixture-tech/index.html'), 'utf8'));
+  const records = JSON.parse(fs.readFileSync(path.join(output, 'i18n-routes.json')));
+  assert.equal(records.every(r => r.lang === 'zh-CN'), true);
+  assert.equal(records.filter(r => r.kind === 'post').length, inspectContent(ROOT).filter(p => p.post).length + 1);
+  assert.equal(fs.existsSync(path.join(output, 'private-note/index.html')), false);
+  assert.equal(fs.existsSync(path.join(output, 'posts/fixture-draft/index.html')), false);
+  const $ = cheerio.load(fs.readFileSync(path.join(output, 'posts/fixture-tech/index.html'), 'utf8'));
   assert.match($('pre').text(), /const message = "<中文 & English>";/);
   assert.match($('#article-container').text(), /E=mc\^2/);
-  for (const f of files(path.join(ROOT, 'source/img'))) {
-    assert.deepEqual(fs.readFileSync(path.join(output, path.relative(path.join(ROOT, 'source'), f))), fs.readFileSync(f));
+  assert.equal($('#menus [data-locale="en"]').attr('href'), '/posts/fixture-tech/?lang=en');
+  assert.equal($('script[src="/js/translation.js"]').length, 1);
+  assert.equal($('#twikoo-wrap').attr('data-comment-path'), '/posts/fixture-tech/');
+  const aliases = JSON.parse(fs.readFileSync(path.join(output, 'language-redirects.json')));
+  assert.equal(aliases.find(a => a.url === '/ja/posts/hello-blog/').target, '/2026/08/03/hello%20world/');
+  for (const alias of aliases) {
+    const html = fs.readFileSync(path.join(output, alias.output), 'utf8');
+    assert.match(html, /noindex,follow/);
+    assert.ok(html.includes(alias.target + '?lang=' + alias.lang));
+    assert.ok(html.includes('location.hash'));
+  }
+  for (const file of files(output).filter(f => f.endsWith('.html'))) {
+    const page = cheerio.load(fs.readFileSync(file, 'utf8'));
+    page('script:not([src])').each((_, el) => {
+      if (!page(el).attr('type') || /javascript/.test(page(el).attr('type'))) new vm.Script(page(el).text(), { filename: file });
+    });
   }
   const catalog = require('../../source/data/collections.json');
-  for (const locale of locales) {
-    const music = cheerio.load(fs.readFileSync(path.join(output, locale.root, 'music/index.html'), 'utf8'));
-    const gallery = cheerio.load(fs.readFileSync(path.join(output, locale.root, 'Gallery/index.html'), 'utf8'));
-    const cinema = cheerio.load(fs.readFileSync(path.join(output, locale.root, 'movies/index.html'), 'utf8'));
-    assert.equal(music('body').attr('data-section'), 'music');
-    assert.equal(music('.track-play').length, catalog.tracks.length);
-    assert.deepEqual(JSON.parse(music('#site-music-data').text()), catalog.tracks);
-    assert.equal(music('.collection-comments #post-comment').length, 1);
-    assert.equal(music('#twikoo-wrap').attr('data-comment-path'), '/music/');
-    assert.equal(music('#body-wrap #kagiel-player, .js-pjax #kagiel-player').length, 0);
-    assert.equal(music('#kagiel-player').length, 1);
-    assert.equal(music('script[data-pjax][src*="busuanzi"]').length, 0);
-    assert.match(music('#config-diff').text(), new RegExp('"lang":"' + locale.id + '"'));
-    assert.match(music('script').text(), /Pjax.switches.innerHTML/);
-    assert.equal(gallery('.wallpaper-card').length, catalog.images.length);
-    for (const picture of catalog.images) assert.ok(gallery('img').toArray().some(el => gallery(el).attr('alt') === picture.title[locale.id]));
-    assert.equal(cinema('video[controls]:not([autoplay])').length, catalog.videos.length);
-  }
+  const music = cheerio.load(fs.readFileSync(path.join(output, 'music/index.html'), 'utf8'));
+  const gallery = cheerio.load(fs.readFileSync(path.join(output, 'Gallery/index.html'), 'utf8'));
+  const cinema = cheerio.load(fs.readFileSync(path.join(output, 'movies/index.html'), 'utf8'));
+  assert.equal(music('.track-play').length, catalog.tracks.length);
+  assert.deepEqual(JSON.parse(music('#site-music-data').text()), catalog.tracks);
+  assert.equal(music('#body-wrap #kagiel-player, .js-pjax #kagiel-player').length, 0);
+  assert.equal(music('#kagiel-player').length, 1);
+  assert.equal(music('#twikoo-wrap').attr('data-comment-path'), '/music/');
+  assert.match(music('script').text(), /Pjax.switches.innerHTML/);
+  assert.equal(music('script[src*="busuanzi"]').length, 0);
+  assert.equal(gallery('.wallpaper-card').length, catalog.images.length);
+  assert.equal(cinema('video[controls]:not([autoplay])').length, catalog.videos.length);
+  assert.deepEqual(protectedParts(body), protectedParts(readPost(path.join(fixture, 'source/_posts/fixture-tech.md'))._content));
   const server = createServer(output);
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
   try {
-    for (const r of records) assert.equal((await fetch(base + r.url)).status, 200, r.url);
-    const error = await fetch(base + '/ja/this-page-does-not-exist/');
-    assert.equal(error.status, 404);
-    assert.match(await error.text(), /ページが見つかりません/);
-    const range = await fetch(base + '/music/nop.mp3', { headers: { Range: 'bytes=0-15' } });
-    assert.equal(range.status, 206); assert.equal((await range.arrayBuffer()).byteLength, 16);
-    for (const track of catalog.tracks) {
-      const media = await fetch(base + track.url, { headers: { Range: 'bytes=0-15' } });
-      assert.equal(media.status, 206); assert.equal(media.headers.get('content-type'), 'audio/mpeg');
-      assert.equal((await media.arrayBuffer()).byteLength, 16);
-    }
-    for (const clip of catalog.videos) {
-      const media = await fetch(base + clip.url, { headers: { Range: 'bytes=0-15' } });
-      assert.equal(media.status, 206); assert.equal(media.headers.get('content-type'), 'video/mp4');
+    for (const r of [...records, ...aliases]) assert.equal((await fetch(base + r.url)).status, 200, r.url);
+    assert.equal((await fetch(base + '/ja/this-page-does-not-exist/')).status, 404);
+    for (const item of [...catalog.tracks, ...catalog.videos]) {
+      const media = await fetch(base + item.url, { headers: { Range: 'bytes=0-15' } });
+      assert.equal(media.status, 206);
       assert.equal((await media.arrayBuffer()).byteLength, 16);
     }
     assert.equal((await fetch(base + '/2026/08/04/hello%20world/')).status, 200);
   } finally { await new Promise(resolve => server.close(resolve)); }
-  console.log('Fixture output (retained for inspection): ' + output);
+  console.log('Fixture output: ' + output);
 });

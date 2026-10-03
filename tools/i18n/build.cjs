@@ -47,7 +47,7 @@ function build({ contentRoot = ROOT, publish = true } = {}) {
     if (fs.existsSync(live)) fs.renameSync(live, backup);
     try { fs.renameSync(output, live); }
     catch (e) { if (fs.existsSync(backup)) fs.renameSync(backup, live); throw e; }
-    console.log('Verified multilingual site is ready in public/. Previous output retained in ' + path.relative(ROOT, backup));
+    console.log('Verified single-source site is ready in public/. Previous output retained in ' + path.relative(ROOT, backup));
     return live;
   }
   return output;

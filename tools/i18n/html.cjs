@@ -6,13 +6,7 @@ const { enhanceAppearance } = require('./appearance.cjs');
 const { renderSection } = require('./sections.cjs');
 const { enhanceNavigation, enhanceSearch } = require('./navigation.cjs');
 const { translationMenu, languageRedirects } = require('./translation.cjs');
-const { locales, legacy, origin, write, escape, canonical, translations, targetFor, encodePath } = require('./lib.cjs');
-function switcher(record, records, locale) {
-  return `<div class="menus_item i18n-menu"><span class="site-page group" tabindex="0" aria-label="${escape(locale.switch)}"><i class="fas fa-language fa-fw" aria-hidden="true"></i> ${escape(locale.label)} <i class="fas fa-chevron-down" aria-hidden="true"></i></span><ul class="menus_item_child">` + locales.map(l => {
-    const target = targetFor(record, l, records);
-    return `<li><a class="site-page child" data-locale="${l.id}" lang="${l.id}" title="${escape(target.exact ? l.label : l.missingShort)}" ${target.exact ? `hreflang="${l.id}"` : ''} ${l.id === locale.id ? 'aria-current="page"' : ''} href="${escape(target.url)}">${escape(l.label)}${target.exact ? '' : ' ↩'}</a></li>`;
-  }).join('') + '</ul></div>';
-}
+const { locales, legacy, origin, write, escape, canonical, translations, encodePath } = require('./lib.cjs');
 function finalize(output, records) {
   const routes = new Set();
   for (const r of records) {

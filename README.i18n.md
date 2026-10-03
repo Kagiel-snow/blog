@@ -1,10 +1,49 @@
-# Kagiel 博客：四语言维护说明
+# 文章与语言维护
 
-本项目保留 Hexo 8.1.2 和 Butterfly 5.6.1。简体中文原站继续使用域名根目录，繁体中文、日语、英语分别使用 `/zh-tw/`、`/ja/`、`/en/`。
+现在只维护一份简体中文原文。读者通过导航里的「语言」选择繁体、日语或英语，页面按需调用外部机器翻译。无需再写四份文章，也无需安装翻译插件或填写密钥。
 
-## 常用命令
+## 日常写文章
 
-使用 Node.js 24（与 GitHub Actions 一致），在项目根目录执行：
+```sh
+npm run post:new -- my-note --title "我的笔记"
+```
+
+编辑生成的 `source/_posts/my-note.md`，写完后把 `published: false` 改成 `true`。保留稳定的 `translation_key` 和 `permalink`：它们用于旧链接、评论和文章标识，不需要另外创建译文。修改正文时更新 `updated`，保留原来的 `date`。
+
+文章风格以 `source/_posts/hello world.md` 为参考：直接记概念、步骤和没弄明白的地方，不编造做过的实验或经历，少用比喻和刻意的励志收尾。2026-10-02 的 Network 笔记覆盖 LAN 拓扑、以太网、CSMA/CD 与 PoE，并附官方资料。
+
+## 修改栏目
+
+- 正文与导语：`source/_posts/`、`source/<栏目>/index.md`。
+- 栏目标题、按钮与简介：`i18n/sections.json` 的 `zh-CN` 部分。
+- 菜单与站点文字：`_config.butterfly.yml`、`i18n/locales.json` 的 `zh-CN` 部分。
+- 壁纸和视频名称：`source/data/collections.json` 的 `title.zh-CN`，其他语言字段不再需要补齐。
+- 标签分类：文章中直接写中文即可；需要固定英文 URL 时，在 `i18n/taxonomies.json` 增加中文名称和 slug。
+
+`locales/zh-TW`、`locales/ja`、`locales/en` 和旧语言文案作为历史资料保留，**不再参与构建，也不要求同步修改**。
+
+## 翻译行为
+
+`source/js/translation.js` 负责翻译菜单、原文恢复、缓存、请求和页面切换。使用 Microsoft Edge 当前网页翻译接口；接口格式核对自 [translate.js 的 client.edge 实现](https://github.com/xnx3/translate/blob/d0dc1c73adf951b029fb6244d8b97d0ef2040075/translate.js/translate.js)。本站直接请求文本接口，没有加载远程翻译脚本，也没有在前端保存私密 API 密钥。
+
+- 默认展示中文。读者选择语言后记住偏好；`?lang=ja`、`?lang=en`、`?lang=zh-TW` 可指定阅读语言，`?lang=zh-CN` 返回中文。
+- 仅把页面公开文字发给翻译服务。代码块、行内代码、公式节点、评论区域、输入框、播放器和歌曲名不参与翻译。链接地址和 DOM 结构不改动。
+- 译文按「原文内容 + 语言」缓存于当前浏览器会话，原文更新后不会误用旧译文；缓存有数量上限。
+- 切语言、站内翻页时取消过期请求，保留原文，避免旧响应覆盖新页面。可随时点「查看原文」。
+- 单次请求 15 秒超时，失败显示提示和重试，不一直转圈。外部接口的可用性和译文质量不由本站保证；它不是带 SLA 的正式 Azure Translator 订阅。
+- 搜索仍查中文原文索引，评论保持访客写下的原文。机器翻译不等于独立出版的外语文章，搜索引擎收录的是中文源页面。
+
+如服务方将来调整接口，只修改这个独立脚本的 `request()`，不用重写文章。不要把收费服务的私密密钥直接写进浏览器脚本；若改用正式 API，需要通过服务端转发。
+
+## 地址、评论和连续播放
+
+中文已发布地址保持不变，包括 `/2026/08/03/hello%20world/`。以前的 `/ja/posts/hello-blog/` 等语言地址由 `i18n/legacy-language-routes.json` 对应到原文，生成带语言选择的静态跳转，保留锚点。新文章也自动生成语言前缀兼容入口。
+
+跳转页标记 noindex，canonical 指向中文；sitemap 只列正文，不把浏览器译文包装成独立的多语言 SEO 页面。过去的四份文章不会重复出现在首页或搜索中。
+
+站内普通链接使用 PJAX，播放器保持同一实例；切语言直接改文字，音乐继续播放。刷新、关闭页面或打开新标签不属于连续播放的范围。评论仍使用原文路径；切语言不重新挂载评论框。统计失败时显示「暂不可用」和重试，不伪造访客数。
+
+## 构建、检查、预览
 
 ```sh
 npm ci
@@ -13,154 +52,10 @@ npm run build
 npm run preview
 ```
 
-打开 `http://127.0.0.1:4000/`。`npm run server` 会先完整构建再启动预览；`npm run preview` 只预览已有 `public/`。修改文章后重新运行 `npm run build` 并刷新页面，不会自动监听。
+使用 Node.js 24。预览地址为 `http://127.0.0.1:4000/`。修改源码后重新构建并刷新；预览服务不自动监听。`npm run check` 检查现有输出。正式构建仍使用 `npm run build`，保留原有主题和 GitHub Pages 工作流，不要改成直接运行 `hexo generate`，否则会漏掉播放器、评论、翻译菜单和旧地址处理。
 
-`npm run check` 单独检查已有输出。四语言正式构建入口是 **`npm run build`**；直接 `hexo generate` 或 `hexo server` 只了解根目录中文配置，不能用来发布完整四语言站点。
+输出只有一份中文 Hexo 站点，以及兼容跳转页。每次构建先在 `work/i18n/` 检查，通过后替换 `public/`，旧输出保留为 `previous-public/`。Windows 若提示目录占用，先停止预览再构建。
 
-每次构建使用新的 `work/i18n/<运行编号>/`，独立生成四份 Hexo 数据库与输出。全部检查通过后才将完整站点放入 `public/`；原有输出保留为该运行目录的 `previous-public/`。构建失败时当前 `public/` 不变，因此日常无需 `hexo clean`。`work/` 是本地生成缓存和旧输出，不提交；长期使用会积累空间，可在确认不需要旧输出时自行清理该目录。
+测试覆盖单份内容构建、过期译文不影响发布、草稿排除、旧 URL、脚本语法、代码与公式保留、评论路径、统计超时和重试、音乐及视频分段响应。浏览器还应检查原文恢复、连续切换语言、站内导航、手机菜单和音乐连续播放。
 
-## 内容与 URL
-
-```text
-source/                              # 原有中文内容及共享静态资源
-  _posts/hello world.md               # 原文保持原文件名、正文、日期
-  tags/index.md                      # type: tags
-  categories/index.md                # type: categories
-  link/index.md                      # type: link
-  about/index.md
-  music/index.md
-  Gallery/index.md                    # 大写 G 是已有 URL 的一部分
-  movies/index.md
-  img/, music/, css/                 # 原有图片、音频、样式
-locales/
-  zh-TW/source/                      # 独立繁体中文内容
-  ja/source/                         # 独立日语内容
-  en/source/                         # 独立英语内容
-    _posts/hello-blog.md
-    tags/index.md, ...               # 与中文同类型的页面
-i18n/
-  locales.json                       # 语言前缀及站点自定义 UI 文案
-  taxonomies.json                    # 标签、分类的跨语言概念映射
-  legacy-routes.json                 # 已知旧 URL 的兼容跳转
-tools/i18n/                          # 构建、检查、预览、新建文章和测试
-```
-
-语言路径固定使用 ASCII 小写前缀，HTML 的 `lang` 使用 `zh-CN`、`zh-TW`、`ja`、`en`。没有另外生成 `/zh/`，避免搬迁整个中文站点和制造一套重复地址。
-
-现有中文文章的已发布 URL 固定为 `/2026/08/03/hello%20world/`。曾在本地出现的 `/2026/08/04/hello%20world/` 保留为兼容跳转。旧日期路径差异来自本地与 CI 的进程时区；构建进程现在固定为 Asia/Tokyo，旧文章同时明确设置 `permalink`。
-
-新文章推荐 `/posts/<稳定标识>/`，译文为 `/<语言>/posts/<稳定标识>/`。标题、文件名和语言正文都可以不同；关联依靠 `translation_key`，不能在发布后随意改动这个标识或 permalink。
-
-## 新建文章与添加译文
-
-```sh
-npm run post:new -- my-first-post --title "我的新文章"
-npm run post:new -- my-first-post --lang zh-TW --title "我的新文章"
-npm run post:new -- my-first-post --lang ja --title "はじめての記事"
-npm run post:new -- my-first-post --lang en --title "My first post"
-```
-
-新文件默认 `published: false`。工具不会覆盖同名文件或同语言的同一篇文章。译文草稿复制原始正文作为编辑起点，同时保留技术片段，**不会调用翻译 API，也不会假装已经翻译完成**。
-
-先写好中文原文，再为需要的语言创建草稿。按目标读者重新组织表达，审核标题、段落、技术术语、图片说明及分类，最后设置 `published: true`（或移除此字段）。可以先发布中文，稍后发布其他语言，缺译文不妨碍部署。
-
-```yaml
----
-title: A natural English title
-lang: en
-translation_key: my-first-post
-permalink: posts/my-first-post/
-date: '2026-09-30T18:00:00+09:00'
-updated: '2026-09-30T18:00:00+09:00'
-published: false
-tags: []
-categories: []
-source_revision: 'sha256:由新建工具记录的原文正文摘要'
----
-```
-
-`date` 是该语言版本的发布日期，`updated` 在修改该版本时手动更新。工具使用明确时区，避免文件修改时间造成每次部署的更新时间变化。旧文章不要为增加译文而改掉原始日期。
-
-修改原文后，带 `source_revision: sha256:...` 的旧译文会在构建时提示需要复核。完成复核后，使用当前原文正文 SHA-256 更新该字段；未更新只是警告，不会自动改动译文或发布日期。已有三份译文已记录当前原文摘要。
-
-代码块、行内代码、常见数学公式、链接目标和 Hexo 标签在构建前会比较。允许段落重排和自然改写，技术片段不同会阻止构建。确有必要改变技术示例时，先人工审核，再在该译文添加 `technical_changes_reviewed: true`；此开关绕过整篇译文的片段比较，不能用来掩盖未检查的翻译。比较器是保守的常用 Markdown 语法检查，不是完整的语义证明；复杂嵌套语法仍需预览。
-
-资源继续优先使用 `/img/...`、`/music/...` 等已有地址。不要把图片名、URL、命令或代码中的中文标识当成正文翻译。源文件本身不会被构建器改写。当前 `post_asset_folder: false` 保持不变。
-
-## 页面与标签、分类
-
-普通页面按相同相对路径关联，例如四份 `about/index.md`。若译文页面需要不同路径，在对应页面 front matter 中设置相同的 `translation_key`。标签总览必须有 `type: tags`，分类总览有 `type: categories`，友链有 `type: link`。
-
-目前已有三篇学习随笔，按「网络安全 / 日语 / 随手记」标签和「边学边记 / 语言小日记」分类组织。每种语言使用本语言的 tags/categories，Hexo 会各自生成列表；不会把四种语言混成四倍文章数。没有内容的语言仍显示空状态。
-
-如需让一个具体标签或分类切换到它的翻译名称，在 `i18n/taxonomies.json` 中登记稳定概念标识：
-
-```json
-{
-  "tags": {
-    "security": {
-      "names": {"zh-CN":"网络安全","zh-TW":"資訊安全","ja":"情報セキュリティ","en":"Security"},
-      "slugs": {"zh-CN":"网络安全","zh-TW":"security","ja":"security","en":"security"}
-    }
-  },
-  "categories": {}
-}
-```
-
-既有中文标签的 slug 应保持原值；**不要为了翻译显示文字而改掉已发布地址**。分类层级遵循 Hexo 原有结构，父、子分类分别登记概念。多条分类路径使用 Hexo 的数组嵌套语法。未登记概念时仍能生成标签/分类，切换语言回到目标语言总览，并提示没有对应列表。
-
-友链文本可在各语言自己的 `source/_data/link.yml` 维护；当前没有真实友链，所以友链页提供联系入口，并将 Hexo、Butterfly、いろどり列为常用资源。音乐、画廊、放映室使用用户提供的本地媒体，维护方式见 `README.collections.md`。
-
-## UI、语言切换与 SEO
-
-- Butterfly 自带的四份语言字典负责日期、目录、版权、搜索、侧栏等主题文字。
-- `i18n/locales.json` 负责菜单、描述、公告、关注、打赏、分享、空状态等自定义文案。
-- 菜单的路径、顺序、图标继续读取 `_config.butterfly.yml`。添加新菜单后，可在各语言对象中增加 `menuLabels`（原菜单名称到译名的映射）；没有译名的自定义菜单仍会保留，不会被构建器删除。
-- 每次构建按语言覆盖这些文本，背景、头像、布局、原有 CSS、播放器和 Live2D 配置继续来自原主题配置。
-- 桌面与移动菜单都有静态语言链接，不依赖浏览器翻译或在线翻译服务。原 `translate.enable` 字符转换器已关闭，防止改写代码和专有名称。
-- 有译文时直接跳到对应版本；没有时跳到该语言首页，标签/分类/归档则回到相应总览，展示缺译提示及已有版本链接。回退提示同时支持 JS 与 URL fragment/CSS；禁用 JS 后语言链接仍有效。
-- URL 本身决定语言，不根据浏览器语言强制跳转，不把同一路径的内容随 cookie 改变。普通分页回退到首页；日历归档有同年月页时进入该页，没有则回到归档总览。
-- 每个真实页面有正确的 `lang`、唯一的自身 canonical；沿用原站 `trailing_index: true` 的 canonical 形式。
-- `hreflang` 只关联已发布的真实对应页，并双向输出；中文是 `x-default`。缺译文首页不能冒充文章译文。草稿、404 和兼容跳转不会进入正常 hreflang 集合。
-- `/sitemap.xml` 是总索引，引用 `/sitemap-zh-CN.xml`、`/zh-tw/sitemap.xml`、`/ja/sitemap.xml`、`/en/sitemap.xml`。`robots.txt` 指向总索引。404 与兼容跳转不收录。
-- Twikoo 界面使用当前语言，同一内容的四种语言按 `translation_key` 共用简体中文原地址下的评论；包括英文使用不同 slug 的旧文章。原有中文留言无需迁移，留言正文不会自动翻译。没有中文原文时使用 `/comments/<内容标识>/`。此前单独写在译文 URL 下的留言不会自动迁移。
-
-## 构建实现与依赖
-
-`build.cjs` 组织四个独立 Hexo 进程；`worker.cjs` 调用原生 Hexo API 和原来的生成器；`html.cjs` 在构建时增加语言菜单、回退提示和 SEO 关联；`check.cjs` 检查输出。没有修改 `node_modules` 或复制整套 Butterfly 模板。
-
-新增 `hexo-generator-sitemap` 3.0.1 生成基础 sitemap；显式声明 `js-yaml` 4.3.1、`hexo-front-matter` 4.2.1 和 `cheerio` 1.1.2，分别处理配置、front matter 与生成的 HTML。没有额外 i18n 插件、浏览器翻译脚本、付费 API 或复杂前端框架。安装版本由 `package-lock.json` 固定。
-
-使用生成后的 HTML 做小范围扩展，是为了避开 Butterfly 缓存的导航片段中放入“每篇文章不同的译文链接”的问题。检查器验证桌面/移动两个菜单挂载点及语言链接数量，主题将来升级若改变 DOM，构建会明确失败，不会悄悄发布缺菜单的站点。
-
-## 验证范围
-
-`npm run build` 自带检查：所有生成 HTML 的站内 href/src、懒加载图像、srcset、行内样式、CSS 资源、已有播放器资源、必须存在的页面、搜索语言隔离、canonical、hreflang、sitemap、旧文章地址。
-
-`npm test` 在忽略的 `work/` 中建立独立样例，测试：缺译文、某语言零文章、草稿排除、文章链接不被主题缓存串用、标签和嵌套分类映射、代码/公式保留、语言不一致的技术片段被拒绝、HTTP 页面访问、未知地址真实 404、音乐清单一致、栏目评论保留、画廊本地化，以及 MP3/MP4 分段读取和媒体类型。样例不会改动或发布真实个人内容。
-
-浏览器手动重点查看：四种语言菜单、文章互相切换、搜索结果、手机侧栏、音乐列表、`/Gallery/` 的大小写、标签/分类空状态及友链/关于页面。
-
-## GitHub Pages 部署
-
-保留已有 `.github/workflows/pages.yml` 工作流。现在使用 Node.js 24、`npm ci`、测试、四语言构建，然后把整个 `public/` 上传给 GitHub Pages；main 分支 push 自动触发，也支持 Actions 手动运行。
-
-审阅并提交源文件后，推送到当前 origin 的 main 分支即可触发。不要提交 `node_modules/`、`public/`、`work/`，不要仅上传中文构建。GitHub 仓库 Settings → Pages 的 Source 应为 GitHub Actions，自定义域名保持 `kagiel.top`。部署后检查 Actions 两个 job 成功，并访问域名根目录及 `/zh-tw/`、`/ja/`、`/en/`。
-
-项目当前使用自定义域名根路径，播放器等历史资源也使用根绝对地址。直接迁到 `用户名.github.io/blog/` 子目录需要单独调整部署根路径，构建器会拒绝这种未经迁移的配置；不能只改 `url` 就假定所有资源仍正确。
-
-## 已知边界
-
-- 新文章不会自动获得高质量译文；草稿生成只是编辑起点，发布前需人工本地化和审核。
-- 画廊、音乐和放映室的内容清单在 `source/data/collections.json`；友链需要以后加入真实站点。七个栏目有独立展示布局，保留原 URL、评论和四语言导航。
-- 当前项目没有启用数学渲染引擎。此次保留公式内容和配置，并测试文本不损坏；新增复杂数学文章时仍需按 Butterfly 文档配置 KaTeX 或 MathJax 及匹配的 Markdown 渲染器。
-- 外部 CDN、评论后端、访问统计、中文名言服务的持续可用性不由静态构建保证；没有替换这些现有服务。中文名言服务仅保留在中文站，其他语言使用本地文案。
-- 页面跳转启用 Butterfly PJAX，保留一个全站播放器；语言配置、移动菜单、搜索索引、页面元数据和栏目交互随跳转更新。正常站内跳转及前进/后退可连续播放，刷新、关闭标签页或离开本站会中断。
-- 评论和访客统计由 `source/js/services.js` 管理，每次跳转重新初始化并丢弃旧请求；统计等待 8 秒后显示当前语言的不可用提示和重试按钮，不伪造访问次数。统计仍使用原不蒜子服务与来源策略。
-- `tools/i18n/navigation.cjs` 维护主题导航与搜索的兼容处理。升级 Butterfly 后若脚本接口改变，构建会报错，需要更新匹配点并重新测试搜索、手机菜单和播放器。
-- GitHub Pages 自定义 404 使用根目录的 `404.html`，提供四语言返回链接；本地预览另外支持按路径前缀显示对应语言 404。真正不存在的 URL 仍应返回 404，而不是伪装成 200。
-- 旧地址兼容使用静态页面的 meta refresh 和 canonical；GitHub Pages 静态托管不能在此代码中配置 HTTP 301。正文实际地址保持原已发布 URL。
-- 资源为保证旧路径和主题 `url_for` 的兼容性，在各语言输出目录中镜像；原始文件只维护一份，发布体积会增加。
-- 同一文章的语言版本发布时间可以不同，因此年月归档与文章排序不必完全相同。
-
-官方参考：[Hexo 国际化](https://hexo.io/docs/internationalization)、[Butterfly 主题配置](https://butterfly.js.org/posts/4aa8abbe/)、[Hexo sitemap 生成器](https://github.com/hexojs/hexo-generator-sitemap)。
+本地构建和预览不代表已经部署到线上。

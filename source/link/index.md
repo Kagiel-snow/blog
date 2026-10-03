@@ -6,4 +6,4 @@ aside: false
 top_img: false
 ---
 
-留一个位置，给值得常去的地方。
+后面有合适的友链再加。

@@ -2,7 +2,8 @@
   "tags": {
     "security": {"names":{"zh-CN":"网络安全","zh-TW":"資訊安全","ja":"情報セキュリティ","en":"Security"},"slugs":{"zh-CN":"security","zh-TW":"security","ja":"security","en":"security"}},
     "notes": {"names":{"zh-CN":"随手记","zh-TW":"隨手記","ja":"雑記","en":"Small notes"},"slugs":{"zh-CN":"notes","zh-TW":"notes","ja":"notes","en":"notes"}},
-    "japanese": {"names":{"zh-CN":"日语","zh-TW":"日文","ja":"日本語学習","en":"Japanese"},"slugs":{"zh-CN":"japanese","zh-TW":"japanese","ja":"japanese","en":"japanese"}}
+    "japanese": {"names":{"zh-CN":"日语","zh-TW":"日文","ja":"日本語学習","en":"Japanese"},"slugs":{"zh-CN":"japanese","zh-TW":"japanese","ja":"japanese","en":"japanese"}},
+    "network": {"names":{"zh-CN":"计算机网络"},"slugs":{"zh-CN":"network"}}
   },
   "categories": {
     "learning": {"names":{"zh-CN":"边学边记","zh-TW":"邊學邊記","ja":"学びのメモ","en":"Learning notes"},"slugs":{"zh-CN":"learning","zh-TW":"learning","ja":"learning","en":"learning"}},

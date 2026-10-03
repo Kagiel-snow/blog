@@ -25,7 +25,8 @@ function enhanceNavigation($, record, records, locale) {
     search: { title: $('.search-dialog-title').text(), placeholder: $('.local-search-input input').attr('placeholder') },
     comments: { ...theme.twikoo.option, envId: theme.twikoo.envId, region: theme.twikoo.region || '', lang: locale.id, path: commentPath }
   };
-  $('#config-diff').prepend(`window.sitePage = ${json(state)};\nObject.assign(GLOBAL_CONFIG, window.sitePage.config);\nwindow.siteNavigation?.apply();\n`);
+  // Script text must not pass through HTML fragment parsing (&quot; in metadata).
+  $('#config-diff').text(`window.sitePage = ${json(state)};\nObject.assign(GLOBAL_CONFIG, window.sitePage.config);\nwindow.siteNavigation?.apply();\n` + $('#config-diff').text());
   // The player and search dialog remain mounted. Replace the mobile menu too.
   const selectors = ['head > title', '#config-diff', '#body-wrap', '#sidebar-menus .menus_items', '#sidebar-menus .site-data', '#rightside-config-hide', '#rightside-config-show', '.js-pjax'];
   $(pjaxScript).text($(pjaxScript).text().replace(/const pjaxSelectors = [^\n]+/, `const pjaxSelectors = ${json(selectors)}`)

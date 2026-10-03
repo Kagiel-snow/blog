@@ -79,7 +79,13 @@ function check(output = path.join(ROOT, 'public')) {
   }
   for (const target of Object.values(legacy)) if (!exists(target, '/')) errors.push(`Old published URL missing: ${target}`);
   if (errors.length) throw new Error([...new Set(errors)].join('\n'));
-  console.log(`PASS: ${records.length} multilingual HTML pages; internal links, required routes, language isolation, canonical, hreflang and sitemaps.`);
+  const aliases = JSON.parse(fs.readFileSync(path.join(output, 'language-redirects.json'), 'utf8'));
+  for (const a of aliases) {
+    if (!exists(a.url, '/') || !exists(a.target, '/')) throw new Error('Broken language redirect: ' + a.url);
+    const $ = cheerio.load(fs.readFileSync(path.join(output, a.output), 'utf8'));
+    if ($('link[rel="canonical"]').attr('href') !== canonical(a.target) || !$('meta[name="robots"]').attr('content')?.includes('noindex')) throw new Error('Wrong redirect metadata: ' + a.url);
+  }
+  console.log(`PASS: ${records.length} Chinese HTML pages, ${aliases.length} language redirects; links, services, canonical and sitemaps.`);
   return records;
 }
 if (require.main === module) { try { check(process.argv[2]); } catch (e) { console.error(e.message); process.exitCode = 1; } }
