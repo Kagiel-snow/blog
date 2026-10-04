@@ -20,6 +20,7 @@ function enhanceNavigation($, record, records, locale) {
   $('#twikoo-wrap').wrap('<div id="site-comments"></div>');
   const state = {
     lang: locale.id, config, appearance: locale.appearance, services: locale.services,
+    statistics: record.noindex ? null : { url: record.canonical },
     body: Object.fromEntries(Object.entries($('body').attr()).filter(([key]) => key.startsWith('data-'))),
     metadata: $(metadata).toArray().map(el => $.html(el)),
     search: { title: $('.search-dialog-title').text(), placeholder: $('.local-search-input input').attr('placeholder') },
@@ -50,7 +51,14 @@ function enhanceNavigation($, record, records, locale) {
   });
   if ($('#site-comments').length) $('#site-comments').before(`<p class="service-status" data-comment-status role="status"></p>`);
   $('[id^="busuanzi_value_"]').attr('aria-live', 'polite');
-  $('.card-webinfo .webinfo').append(`<button type="button" class="service-retry" data-retry-stats hidden>${locale.services.retry}</button>`);
+  const statsControls = `<span class="stats-controls"><span data-stats-note role="status"></span> <button type="button" class="service-retry" data-retry-stats hidden>${locale.services.retry}</button></span>`;
+  if ($('.card-webinfo .webinfo').length) $('.card-webinfo .webinfo').append(statsControls);
+  else if ($('#busuanzi_value_page_pv').length) $('#busuanzi_value_page_pv').parent().after(statsControls);
+  $('.search-dialog').attr({ role: 'dialog', 'aria-modal': 'true', 'aria-label': '搜索文章' });
+  $('.local-search-input input').attr({ 'aria-label': '搜索中文原文', maxlength: '80' });
+  $('.search-close-button').attr({ type: 'button', 'aria-label': '关闭搜索' });
+  $('#search-button > .search').attr({ role: 'button', tabindex: '0', 'aria-label': '搜索文章' });
+  $('.local-search-input').after('<p class="search-hint">搜索中文原文，也可以输入 LAN、SQL 等关键词。</p><p class="service-status" data-search-status role="status" translate="no"></p>');
 }
 
 function enhanceSearch(output) {
@@ -63,7 +71,58 @@ function enhanceSearch(output) {
     };
     replace('const { path, top_n_per_article, unescape, languages, pagination }', 'let { path, top_n_per_article, unescape, languages, pagination }');
     replace('const localSearch = new LocalSearch({', 'let localSearch = new LocalSearch({');
-    replace('    $loadDataItem.nextElementSibling', '    if (!$loadDataItem) { inputEventFunction(); return }\n    $loadDataItem.nextElementSibling');
+    // The search script is after its markup and utils.js. Do not wait for slow
+    // external images/widgets (or a stuck statistics JSONP) to fire window.load.
+    replace("window.addEventListener('load', () => {", '(() => {');
+    source = source.trimEnd().replace(/\}\)$/, '})()');
+    replace('    $loadDataItem.nextElementSibling.style.visibility = \'visible\'\n    $loadDataItem.remove()', `    document.querySelector('.local-search-input').style.visibility = 'visible'
+    $loadDataItem?.remove()
+    document.querySelector('[data-search-status]').textContent = ''
+    inputEventFunction()`);
+    replace('    fetch(this.path)', `    if (this.pending) return this.pending
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 10000)
+    window.dispatchEvent(new Event('search:loading'))
+    this.pending = fetch(this.path, { signal: controller.signal })`);
+    replace('        this.isfetched = true\n        this.datas', '        this.datas');
+    replace('        // Remove loading animation', '        this.isfetched = true\n        // Remove loading animation');
+    replace(`        console.error('Local search data fetch failed:', error)
+        this.isfetched = true
+        this.datas = []
+        window.dispatchEvent(new Event('search:loaded'))
+      })`, `        this.isfetched = false
+        this.datas = []
+        window.dispatchEvent(new Event('search:failed'))
+      })
+      .finally(() => { clearTimeout(timeout); this.pending = null })
+    return this.pending`);
+    replace("    if (!loadFlag) {\n      !localSearch.isfetched && localSearch.fetchData()", "    !localSearch.isfetched && localSearch.fetchData()\n    if (!loadFlag) {");
+    replace("    btf.addEventListenerPjax(document.querySelector('#search-button > .search'), 'click', openSearch)", `    // Delegate once: the navigation button is replaced by PJAX.
+    document.addEventListener('click', event => {
+      if (event.target.closest('#search-button > .search')) openSearch()
+    })
+    document.addEventListener('keydown', event => {
+      if (event.target.closest('#search-button > .search') && ['Enter', ' '].includes(event.key)) {
+        event.preventDefault(); openSearch()
+      }
+    })`);
+    replace("    searchClickFn()\n  })", "  })");
+    replace("  searchClickFn()\n  searchFnOnce()", `  const searchStatus = document.querySelector('[data-search-status]')
+  document.querySelector('.local-search-input').style.visibility = 'visible'
+  window.addEventListener('search:loading', () => { searchStatus.textContent = '正在加载文章索引…' })
+  window.addEventListener('search:failed', () => {
+    document.getElementById('loading-database')?.remove()
+    searchStatus.textContent = '文章索引没有加载成功。 '
+    const retry = document.createElement('button')
+    retry.type = 'button'; retry.className = 'service-retry'; retry.textContent = '重试'
+    retry.addEventListener('click', () => localSearch.fetchData())
+    searchStatus.append(retry)
+  })
+  searchClickFn()
+  searchFnOnce()`);
+    // A keyword longer than the snippet must still consume its match.
+    replace('position + 100)', 'position + Math.max(100, item.word.length))');
+    replace("    const params = new URL(location.href)", "    this._processedKeywords = null\n    const params = new URL(location.href)");
     replace("    !btf.isHidden($searchMask) && closeSearch()", `    !btf.isHidden($searchMask) && closeSearch()
     if (localSearch.path !== GLOBAL_CONFIG.localSearch.path) {
       clearTimeout(searchTimeout)

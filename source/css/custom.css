@@ -18,6 +18,10 @@ body { background: var(--snow-bg); font-family: -apple-system,BlinkMacSystemFont
 .service-status:empty { display: none; }
 .service-retry { padding: 4px 10px; border: 1px solid var(--snow-border); border-radius: 6px; background: var(--snow-soft); color: var(--snow-blue); cursor: pointer; }
 .service-retry[hidden] { display: none; }
+.stats-controls { display: block; color: var(--snow-muted); font-size: 12px; }
+.stats-controls .service-retry { padding: 0 6px; font-size: inherit; }
+.search-hint { margin: 8px 0; color: var(--snow-muted); font-size: 13px; }
+#local-search [data-search-status] { margin: 8px 0; }
 #web_bg { background: var(--snow-bg) !important; }
 [data-theme='dark'] #web_bg::before { background: transparent; }
 html[lang='ja'] body { font-family: -apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif; }

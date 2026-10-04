@@ -36,6 +36,9 @@ test('single-source build preserves drafts, technical snippets, old language URL
   assert.equal($('#menus [data-locale="en"]').attr('href'), '/posts/fixture-tech/?lang=en');
   assert.equal($('script[src="/js/translation.js"]').length, 1);
   assert.equal($('#twikoo-wrap').attr('data-comment-path'), '/posts/fixture-tech/');
+  assert.equal($('[data-retry-stats]').length, 1, 'article view counters need a retry control too');
+  assert.equal($('.local-search-input input').attr('maxlength'), '80');
+  assert.equal($('#search-button > .search').attr('tabindex'), '0');
   const aliases = JSON.parse(fs.readFileSync(path.join(output, 'language-redirects.json')));
   assert.equal(aliases.find(a => a.url === '/ja/posts/hello-blog/').target, '/2026/08/03/hello%20world/');
   for (const alias of aliases) {
