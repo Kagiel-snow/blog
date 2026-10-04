@@ -7,6 +7,24 @@ const vm = require('node:vm');
 const locales = require('../../i18n/locales.json');
 const services = fs.readFileSync(path.join(__dirname, '../../source/js/services.js'), 'utf8');
 
+test('player controls stay open when their clicked icon is replaced; outside clicks still close', () => {
+  const listeners = {};
+  const control = { addEventListener() {} };
+  const dock = { open: true, addEventListener() {}, querySelector: () => control };
+  const context = {
+    document: {
+      querySelector: selector => selector === '.music-dock' ? dock : null,
+      addEventListener: (name, fn) => { listeners[name] = fn; }
+    }
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../source/js/appearance.js'), 'utf8'), context);
+  const detachedIcon = { closest: () => null };
+  listeners.click({ target: detachedIcon, composedPath: () => [detachedIcon, dock] });
+  assert.equal(dock.open, true, 'replaced play/pause icons are still inside clicks');
+  listeners.click({ target: detachedIcon, composedPath: () => [detachedIcon] });
+  assert.equal(dock.open, false, 'actual outside clicks still dismiss the panel');
+});
+
 const settle = () => new Promise(resolve => setImmediate(resolve));
 function harness(locale, origin = 'https://kagiel.top') {
   const listeners = {}, timers = new Map(), requests = [];
@@ -96,6 +114,20 @@ test('local previews read canonical public counts and label cached responses hon
   h.listeners['pjax:complete']();
   h.respond({ site_uv: 0, site_pv: 0, page_pv: 0 }, h.requests.at(-1), 'error'); await settle();
   assert.equal(h.values[0].textContent, locales[0].services.unavailable, 'errors and other-page caches must not become zero or invented page counts');
+});
+
+test('pages without visible counters still record visits; noindex pages skip statistics', async () => {
+  const h = harness(locales[0]);
+  h.respond({ site_uv: 1, site_pv: 1, page_pv: 1 }); await settle();
+  h.context.document.querySelectorAll = () => [];
+  h.context.sitePage.statistics.url = 'https://kagiel.top/music/';
+  h.listeners['pjax:complete']();
+  assert.equal(h.requests.length, 2);
+  assert.equal(JSON.parse(h.requests[1].options.body).url, 'https://kagiel.top/music/');
+  h.context.sitePage.statistics = null;
+  h.listeners['pjax:complete']();
+  assert.equal(h.requests.length, 2);
+  await settle();
 });
 
 test('comment loading completes even when Twikoo replaces its mount; translations keep the original path', async () => {

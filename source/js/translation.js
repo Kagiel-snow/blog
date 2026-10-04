@@ -2,9 +2,9 @@
 (() => {
   const languages = {
     'zh-CN': { label: '简体中文' },
-    'zh-TW': { label: '繁體中文', service: 'chinese_traditional', loading: '正在翻譯…', done: '機器翻譯 · 原文為中文', error: '部分內容未翻譯，暫時顯示原文', retry: '重試', original: '查看原文' },
-    ja: { label: '日本語', service: 'japanese', loading: '翻訳中…', done: '機械翻訳 · 原文は中国語です', error: '一部を翻訳できませんでした。原文を表示しています', retry: '再試行', original: '原文を読む' },
-    en: { label: 'English', service: 'english', loading: 'Translating…', done: 'Machine translation · Original in Chinese', error: 'Some text could not be translated. Showing the original.', retry: 'Retry', original: 'Read original' }
+    'zh-TW': { label: '繁體中文', service: 'chinese_traditional', loading: '正在翻譯…', done: '機器翻譯 · 原文為中文', error: '部分內容未翻譯，暫時顯示原文', retry: '重試', original: '查看原文', dismiss: '關閉翻譯提示' },
+    ja: { label: '日本語', service: 'japanese', loading: '翻訳中…', done: '機械翻訳 · 原文は中国語です', error: '一部を翻訳できませんでした。原文を表示しています', retry: '再試行', original: '原文を読む', dismiss: '翻訳のお知らせを閉じる' },
+    en: { label: 'English', service: 'english', loading: 'Translating…', done: 'Machine translation · Original in Chinese', error: 'Some text could not be translated. Showing the original.', retry: 'Retry', original: 'Read original', dismiss: 'Dismiss translation notice' }
   };
   // Only public prose is sent. Never collect comments, form values or technical blocks.
   const excluded = 'script,style,noscript,pre,code,kbd,samp,textarea,input,select,svg,math,iframe,[contenteditable],[translate="no"],.notranslate,.katex,.MathJax,mjx-container,.i18n-menu,.translation-notice,#site-comments,#post-comment,.service-status,[data-retry-stats],[id^="busuanzi"],#kagiel-player,.track-body h2,.track-body p,.local-search-input,.search-result-list';
@@ -22,15 +22,15 @@
     const value = new URLSearchParams(location.search).get('lang') || savedLanguage();
     return Object.hasOwn(languages, value) ? value : 'zh-CN';
   };
-  let notice;
+  let notice, noticeDismissed = false;
   function status(state) {
     if (!notice) {
       notice = document.createElement('aside');
       notice.className = 'translation-notice'; notice.setAttribute('translate', 'no');
-      notice.innerHTML = '<span role="status" aria-live="polite"></span><button type="button" data-translation-retry></button><button type="button" data-translation-original></button>';
+      notice.innerHTML = '<span role="status" aria-live="polite"></span><button type="button" data-translation-retry></button><button type="button" data-translation-original></button><button type="button" data-translation-dismiss>×</button>';
       document.body.append(notice);
     }
-    notice.hidden = language === 'zh-CN';
+    notice.hidden = language === 'zh-CN' || noticeDismissed;
     if (notice.hidden) return;
     const t = languages[language];
     notice.lang = language;
@@ -38,6 +38,7 @@
     const retry = notice.querySelector('[data-translation-retry]');
     retry.hidden = state !== 'error'; retry.textContent = t.retry;
     notice.querySelector('[data-translation-original]').textContent = t.original;
+    notice.querySelector('[data-translation-dismiss]').setAttribute('aria-label', t.dismiss);
     notice.dataset.state = state;
   }
   function updateMenu() {
@@ -132,6 +133,9 @@
   function schedule() { clearTimeout(timer); if (!navigating) timer = setTimeout(run, 180); }
   function choose(lang, updateUrl = true) {
     if (!Object.hasOwn(languages, lang)) return;
+    // Keep a dismissed notice tucked away across navigation. Choosing a
+    // language explicitly opens it again, without tying dismissal to Chinese.
+    if (updateUrl || lang !== language) noticeDismissed = false;
     generation++; cancelRequest(); restore(); language = lang;
     try { localStorage.setItem('site-reading-language', lang); } catch {}
     if (updateUrl) {
@@ -149,6 +153,10 @@
     }
     if (event.target.closest('[data-translation-original]')) choose('zh-CN');
     if (event.target.closest('[data-translation-retry]')) schedule();
+    if (event.target.closest('[data-translation-dismiss]') && notice) {
+      noticeDismissed = true;
+      notice.hidden = true;
+    }
   });
   document.addEventListener('pjax:send', () => { navigating = true; generation++; cancelRequest(); clearTimeout(timer); });
   document.addEventListener('pjax:complete', () => { navigating = false; choose(selectedLanguage(), false); });

@@ -14,8 +14,8 @@ function harness() {
   const node = (value, blocked = false) => ({ nodeType: 3, nodeValue: value, isConnected: true, parentElement: { closest: () => blocked ? {} : null } });
   const prose = node('今天学了以太网。'), code = node('const 中文 = 1;', true), comment = node('评论里的原文', true), input = node('还没发出的内容', true);
   const nodes = [prose, code, comment, input];
-  const label = {}, retry = {}, original = {};
-  const notice = { dataset: {}, setAttribute() {}, querySelector: selector => selector === 'span' ? label : selector.includes('retry') ? retry : original };
+  const label = {}, retry = {}, original = {}, dismiss = { setAttribute() {} };
+  const notice = { dataset: {}, setAttribute() {}, querySelector: selector => selector === 'span' ? label : selector.includes('retry') ? retry : selector.includes('dismiss') ? dismiss : original };
   const location = new URL('https://example.test/posts/note/');
   const context = {
     URL, URLSearchParams, AbortController, NodeFilter: { SHOW_TEXT: 4 }, location,
@@ -95,4 +95,21 @@ test('switching languages or pages cancels old requests; failures stop and can r
   h.prose.isConnected = false;
   h.respond(pending, 'LATE PAGE'); await settle();
   assert.notEqual(h.prose.nodeValue, 'LATE PAGE');
+});
+
+test('dismissing the notice preserves translation through completion and page navigation', async () => {
+  const h = harness(); h.choose('en'); await h.tick();
+  h.listeners.click({ target: { closest: selector => selector === '[data-translation-dismiss]' ? {} : null } });
+  assert.equal(h.notice.hidden, true);
+  assert.equal(h.requests[0].options.signal.aborted, false, 'dismissal must not cancel translation');
+  h.respond(h.requests[0], 'Today I learned Ethernet.'); await settle();
+  assert.equal(h.notice.hidden, true, 'completion must not reopen a dismissed notice');
+  assert.equal(h.prose.nodeValue, 'Today I learned Ethernet.');
+  assert.equal(h.context.document.documentElement.lang, 'en');
+  assert.equal(h.context.location.search, '?lang=en');
+  h.listeners['pjax:send'](); h.listeners['pjax:complete'](); await h.tick();
+  assert.equal(h.notice.hidden, true);
+  assert.equal(h.prose.nodeValue, 'Today I learned Ethernet.');
+  h.choose('ja');
+  assert.equal(h.notice.hidden, false, 'explicit language selection makes status and retry available again');
 });

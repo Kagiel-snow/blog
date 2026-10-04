@@ -64,6 +64,10 @@ test('single-source build preserves drafts, technical snippets, old language URL
   assert.equal(music('#twikoo-wrap').attr('data-comment-path'), '/music/');
   assert.match(music('script').text(), /Pjax.switches.innerHTML/);
   assert.equal(music('script[src*="busuanzi"]').length, 0);
+  for (const dependency of ['aplayer-1.10.1/APlayer.min.js', 'pjax-0.2.8/pjax.min.js', 'snackbar-0.1.16/snackbar.min.js']) {
+    assert.equal(music(`script[src="/vendor/${dependency}"]`).length, 1);
+    assert.ok(fs.existsSync(path.join(output, 'vendor', dependency)));
+  }
   assert.equal(gallery('.wallpaper-card').length, catalog.images.length);
   assert.equal(cinema('video[controls]:not([autoplay])').length, catalog.videos.length);
   assert.deepEqual(protectedParts(body), protectedParts(readPost(path.join(fixture, 'source/_posts/fixture-tech.md'))._content));
