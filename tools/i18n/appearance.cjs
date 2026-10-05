@@ -12,9 +12,6 @@ function enhanceAppearance($, record, locale) {
     if (!link.length) return;
     icon.attr('aria-hidden', 'true');
     link.attr({ 'aria-label': '关注我的抖音（抖音号：SNMYKGY，新窗口打开）', title: '关注我的抖音 · SNMYKGY', rel: 'noopener noreferrer' });
-    if (link.closest('#site_social_icons').length) {
-      link.addClass('social-douyin').append('<span>关注我的抖音</span>');
-    }
   });
   $('#nav .menus_item > .site-page.group').attr('tabindex', '0');
   $('#sidebar-menus .menus_item:not(.i18n-menu) > .site-page.group').addClass('hide');
