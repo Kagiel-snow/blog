@@ -5,7 +5,7 @@ updated: '2026-10-02T18:00:00+09:00'
 lang: zh-CN
 translation_key: japanese-a-little-every-day
 permalink: posts/japanese-a-little-every-day/
-cover: /img/gallery/winter-shrine.jpg
+cover: /img/covers/japanese-blue-street.jpg
 tags:
   - 日语
   - 随手记

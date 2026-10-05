@@ -5,7 +5,7 @@ updated: '2026-10-02T18:00:00+09:00'
 lang: zh-CN
 translation_key: network-lan-ethernet-csma-cd-poe
 permalink: posts/network-lan-ethernet-csma-cd-poe/
-cover: /img/gallery/blue-evening.jpg
+cover: /img/covers/network-starry-night.jpg
 tags:
   - 计算机网络
   - 随手记

@@ -5,7 +5,7 @@ updated: '2026-10-02T18:00:00+09:00'
 lang: zh-CN
 translation_key: when-a-site-gets-crowded
 permalink: posts/when-a-site-gets-crowded/
-cover: /img/gallery/blue-evening.jpg
+cover: /img/covers/ddos-rainy-city.png
 tags:
   - 网络安全
   - 随手记

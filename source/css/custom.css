@@ -20,6 +20,7 @@ body { background: var(--snow-bg); font-family: -apple-system,BlinkMacSystemFont
 .service-retry[hidden] { display: none; }
 .stats-controls { display: block; color: var(--snow-muted); font-size: 12px; }
 .stats-controls .service-retry { padding: 0 6px; font-size: inherit; }
+.traffic-note { margin: 6px 0; font-size: 12px; line-height: 1.7; color: var(--snow-muted); overflow-wrap: anywhere; }
 .search-hint { margin: 8px 0; color: var(--snow-muted); font-size: 13px; }
 #local-search [data-search-status] { margin: 8px 0; }
 #web_bg { background: var(--snow-bg) !important; }
@@ -40,6 +41,8 @@ a,button,summary { -webkit-tap-highlight-color: transparent; }
 #page-header.full_page #site_social_icons { display: block; text-align: left; margin-top: 22px; }
 #site_social_icons .social-icon { font-size: 19px; margin: 0 18px 0 0; }
 #site_social_icons i { color: #fff !important; }
+#site_social_icons .social-douyin { display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; }
+#site_social_icons .social-douyin span { font-size: 14px; font-weight: 500; }
 #page-header.not-home-page { height: 280px; }
 #page-header.not-home-page #page-site-info { top: 130px; }
 #page-header.not-home-page #site-title { font-size: 34px; font-weight: 500; }

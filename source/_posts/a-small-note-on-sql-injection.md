@@ -5,7 +5,7 @@ updated: '2026-10-02T18:00:00+09:00'
 lang: zh-CN
 translation_key: a-small-note-on-sql-injection
 permalink: posts/a-small-note-on-sql-injection/
-cover: /img/gallery/white-wings.jpg
+cover: /img/covers/sql-silver-wings.jpg
 tags:
   - 网络安全
   - 随手记

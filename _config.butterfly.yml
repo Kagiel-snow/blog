@@ -60,6 +60,7 @@ code_blocks:
 social:
   fab fa-github: https://github.com/Kagiel-snow || Github || '#24292e'
   fas fa-envelope: mailto:snow@kagiel.top || Email || '#4a7dbe'
+  fab fa-tiktok: https://www.douyin.com/user/MS4wLjABAAAAXK0VafKhREOi2cFt4JOkLfXUr3kVMAizT8-1HKlb5GBtg2_v7iNeSqd6SNVkdIMK || 关注我的抖音 || '#344252'
 
 # --------------------------------------
 # Image Settings
@@ -373,7 +374,7 @@ aside:
     # Time difference between publish date and now
     # Formal: Month/Day/Year Time or Year/Month/Day Time
     # Leave it empty if you don't enable this feature
-    runtime_date:
+    runtime_date: '2026-08-04T00:00:00+09:00'
 
 # --------------------------------------
 # Bottom right button
