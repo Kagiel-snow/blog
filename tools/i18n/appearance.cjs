@@ -7,6 +7,18 @@ const { renderTraffic } = require('../traffic/cloudflare.cjs');
 // Enhance the generated theme DOM without forking Butterfly or touching articles.
 function enhanceAppearance($, record, locale) {
   $('body').attr('data-page-kind', record.kind);
+  // Keep Hexo's real page links and PJAX behavior; enhance only list pagination.
+  const pager = $('#pagination:not(.pagination-post)');
+  if (pager.find('.page-number').length) {
+    pager.addClass('site-pagination').attr('aria-label', '文章列表分页');
+    const current = pager.find('.page-number.current');
+    const pages = pager.find('.page-number').map((_, el) => Number($(el).text())).get();
+    current.attr('aria-current', 'page');
+    pager.find('a.page-number').each((_, el) => $(el).attr('aria-label', `第 ${$(el).text()} 页`));
+    pager.find('.prev').attr({ 'aria-label': '上一页', rel: 'prev' }).html('<span aria-hidden="true">‹</span><span>上一页</span>');
+    pager.find('.next').attr({ 'aria-label': '下一页', rel: 'next' }).html('<span>下一页</span><span aria-hidden="true">›</span>');
+    pager.prepend(`<p class="pagination-status">第 ${escape(current.text())} 页 / 共 ${Math.max(...pages)} 页</p>`);
+  }
   $('.fa-tiktok').each((_, el) => {
     const icon = $(el), link = icon.parent('a');
     if (!link.length) return;
