@@ -17,6 +17,12 @@ function enhanceAppearance($, record, locale) {
     pager.find('a.page-number').each((_, el) => $(el).attr('aria-label', `第 ${$(el).text()} 页`));
     pager.find('.prev').attr({ 'aria-label': '上一页', rel: 'prev' }).html('<span aria-hidden="true">‹</span><span>上一页</span>');
     pager.find('.next').attr({ 'aria-label': '下一页', rel: 'next' }).html('<span>下一页</span><span aria-hidden="true">›</span>');
+    const controls = pager.find('.pagination');
+    const numbers = $('<div class="pagination-pages"></div>');
+    numbers.append(controls.children('.page-number, .space'));
+    if (!controls.find('.prev').length) controls.prepend('<span class="extend prev" aria-disabled="true"><span aria-hidden="true">‹</span><span>上一页</span></span>');
+    if (!controls.find('.next').length) controls.append('<span class="extend next" aria-disabled="true"><span>下一页</span><span aria-hidden="true">›</span></span>');
+    controls.find('.prev').after(numbers);
     pager.prepend(`<p class="pagination-status">第 ${escape(current.text())} 页 / 共 ${Math.max(...pages)} 页</p>`);
   }
   $('.fa-tiktok').each((_, el) => {
