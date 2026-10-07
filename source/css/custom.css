@@ -157,7 +157,7 @@ body.mascot-hidden #live2d-widget,body.music-open #live2d-widget { display: none
 .mascot-toggle[hidden] { display: none; }
 .mascot-toggle { width: 44px; padding: 0; }
 .mascot-toggle span { display: none; }
-@media (max-width: 1439px) { #live2d-widget,.mascot-toggle { display: none !important; } }
+@media (max-width: 1439px) { #live2d-widget { display: none !important; } }
 @media (min-width: 901px) { #recent-posts .recent-post-item:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(43,66,89,.1); } }
 @media (max-width: 900px) {
   .layout { gap: 24px; padding: 24px 18px 36px; }

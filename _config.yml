@@ -107,7 +107,8 @@ deploy:
 # Live2D 看板娘配置
 # ===============================================
 live2d:
-  enable: true
+  # Replaced by the local avatar-based companion in source/js/mascot.js.
+  enable: false
   scriptFrom: local
   pluginRootPath: live2dw/
   pluginJsPath: lib/

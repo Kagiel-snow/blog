@@ -11,7 +11,7 @@
     "preview": "node tools/i18n/serve.cjs",
     "check": "node tools/i18n/check.cjs",
     "post:new": "node tools/i18n/new-post.cjs",
-    "test": "node --test tools/i18n/test.cjs tools/i18n/runtime.test.cjs tools/i18n/translation.test.cjs tools/i18n/search.test.cjs tools/traffic/cloudflare.test.cjs"
+    "test": "node --test tools/i18n/test.cjs tools/i18n/runtime.test.cjs tools/i18n/translation.test.cjs tools/i18n/search.test.cjs tools/traffic/cloudflare.test.cjs tools/mascot/mascot.test.cjs"
   },
   "hexo": {
     "version": "8.1.2"

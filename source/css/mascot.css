@@ -1,0 +1,65 @@
+/* Local avatar companion. Full figure stays in the unused desktop margin. */
+.site-mascot { --mascot-size: 220px; position: fixed; left: 12px; bottom: 78px; width: var(--mascot-size); height: var(--mascot-size); z-index: 75; pointer-events: none; }
+.mascot-avatar { display: block; position: relative; width: 100%; height: 100%; padding: 0; border: 0; background: transparent; cursor: pointer; pointer-events: auto; touch-action: manipulation; }
+.mascot-rig { display: block; position: absolute; inset: 0; transform-origin: 50% 92%; transform: translate(var(--mascot-x,0px),var(--mascot-y,0px)) rotate(var(--mascot-turn,0deg)); transition: transform .18s ease-out; }
+.mascot-rig img,.mascot-rig canvas { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 5px 9px rgba(30,43,57,.15)); }
+.mascot-canvas { position: absolute; inset: 0; visibility: hidden; }
+.site-mascot.is-rendered .mascot-canvas { visibility: visible; }
+.site-mascot.is-rendered .mascot-fallback { visibility: hidden; }
+.mascot-hint { display: block; position: absolute; left: 50%; bottom: -13px; transform: translateX(-50%); padding: 3px 10px; border: 1px solid var(--snow-border); border-radius: 20px; background: var(--snow-card); color: var(--snow-muted); white-space: nowrap; font-size: 11px; line-height: 1.6; opacity: 0; transition: opacity .2s; }
+.mascot-avatar:hover + .mascot-hint,.mascot-avatar:focus-visible + .mascot-hint { opacity: 1; }
+.mascot-sparkles { position: absolute; left: 60%; top: 14%; color: var(--snow-blue); font-size: 30px; opacity: 0; }
+.site-mascot.is-happy .mascot-rig { animation: mascot-nod .6s ease-in-out; }
+.site-mascot.is-happy .mascot-sparkles { animation: mascot-spark .7s ease-out; }
+@keyframes mascot-nod { 0%,100% { transform: rotate(0deg); } 30% { transform: translateY(-7px) rotate(-3deg); } 65% { transform: translateY(-2px) rotate(2deg); } }
+@keyframes mascot-spark { 0% { opacity: 0; transform: translateY(8px) scale(.4); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(-28px) scale(1.1); } }
+.mascot-dialog { position: absolute; left: 0; bottom: calc(100% + 12px); width: min(290px,calc(100vw - 36px)); padding: 16px; border: 1px solid var(--snow-border); border-radius: 16px; background: var(--snow-card); color: var(--snow-text); box-shadow: 0 10px 36px rgba(25,46,69,.16); pointer-events: auto; text-align: left; font-size: 13px; line-height: 1.65; }
+.mascot-dialog[hidden] { display: none; }
+.mascot-dialog { max-height: calc(100dvh - var(--mascot-size) - 106px); overflow-y: auto; }
+.mascot-dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.mascot-dialog-heading strong { display: block; font-size: 14px; font-weight: 600; }
+.mascot-dialog-heading > div span { display: block; margin-top: 3px; color: var(--snow-muted); font-size: 11px; }
+.mascot-dialog-portrait { display: block; position: relative; flex: 0 0 40px; height: 40px; overflow: hidden; border: 1px solid var(--snow-border); border-radius: 50%; background: var(--snow-soft); }
+.mascot-dialog-portrait img { position: absolute; max-width: none; width: 132px; height: auto; left: -46px; top: -8px; }
+.mascot-dialog button { font: inherit; cursor: pointer; }
+.mascot-close { flex: 0 0 32px; height: 32px; border-radius: 8px; background: var(--snow-soft); color: var(--snow-muted); font-size: 22px !important; }
+.mascot-chat-log { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; min-height: 70px; max-height: 190px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.mascot-message { flex-shrink: 0; margin: 0; padding: 9px 11px; border-radius: 10px; background: var(--snow-soft); overflow-wrap: anywhere; white-space: pre-wrap; }
+.mascot-message[data-role='user'] { align-self: flex-end; max-width: 92%; border: 1px solid var(--snow-border); background: var(--snow-bg); }
+.mascot-message[data-role='user']::before { content: '你 · '; color: var(--snow-muted); font-size: 11px; }
+.mascot-message[data-role='assistant']::before { content: 'KGY · '; color: var(--snow-blue); font-size: 11px; }
+.mascot-message.is-pending { color: var(--snow-muted); }
+.mascot-ai-panel { margin-top: 12px; padding: 9px 10px; border: 1px solid var(--snow-border); border-radius: 10px; background: var(--snow-bg); }
+.mascot-ai-panel summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; color: var(--snow-blue); list-style: none; }
+.mascot-ai-panel summary::-webkit-details-marker { display: none; }
+.mascot-ai-panel summary::before { content: '+'; }
+.mascot-ai-panel[open] summary::before { content: '−'; }
+.mascot-ai-panel summary span { margin-left: auto; color: var(--snow-muted); font-size: 11px; }
+.mascot-ai-panel p { margin: 8px 0 0; color: var(--snow-muted); font-size: 11px; }
+.mascot-ai-controls { display: flex; gap: 8px; margin-top: 8px; }
+.mascot-ai-controls button { padding: 6px 9px; border: 1px solid var(--snow-border); border-radius: 7px; background: var(--snow-card); color: var(--snow-blue); }
+.mascot-ai-panel progress { width: 100%; height: 6px; margin-top: 10px; accent-color: var(--snow-blue); }
+.mascot-dialog button:disabled { opacity: .55; cursor: default; }
+.mascot-dialog [hidden] { display: none; }
+.mascot-topics { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.mascot-topics button { padding: 8px 6px; border: 1px solid var(--snow-border); border-radius: 8px; background: var(--snow-card); color: var(--snow-blue); min-height: 36px; }
+.mascot-topics button:hover { background: var(--snow-soft); }
+.mascot-form { margin: 12px 0; }
+.mascot-form label { display: block; margin-bottom: 5px; color: var(--snow-muted); font-size: 12px; }
+.mascot-form > div { display: flex; gap: 6px; }
+.mascot-form input { min-width: 0; width: 100%; padding: 8px; border: 1px solid var(--snow-border); border-radius: 8px; background: var(--snow-bg); color: var(--snow-text); font: inherit; }
+.mascot-form input::placeholder { color: var(--snow-muted); }
+.mascot-form button { flex-shrink: 0; padding: 8px 10px; border-radius: 8px; background: var(--snow-blue); color: var(--snow-card); }
+.mascot-actions { display: flex; flex-wrap: wrap; gap: 12px; border-top: 1px solid var(--snow-border); padding-top: 10px; }
+.mascot-actions a,.mascot-actions button { padding: 0; border: 0; background: transparent; color: var(--snow-blue); font-size: 12px; }
+body.mascot-hidden .site-mascot,body.music-open .site-mascot { display: none; }
+.mascot-toggle[aria-pressed='true'] { background: var(--snow-soft); }
+.site-mascot[data-layout='full'] { --mascot-size: var(--mascot-rail-size,220px); }
+.site-mascot[data-layout='compact'] { --mascot-size: 72px; left: 12px; bottom: 80px; }
+.site-mascot[data-layout='compact'] .mascot-avatar { overflow: hidden; border: 1px solid var(--snow-border); border-radius: 50%; background: var(--snow-card); box-shadow: var(--snow-shadow); }
+.site-mascot[data-layout='compact'] .mascot-rig { width: 220px; height: 330px; inset: -12px auto auto -74px; transform-origin: 50% 14%; }
+.site-mascot[data-layout='small'] { --mascot-size: 0px; width: 0; height: 0; left: 18px; bottom: 76px; }
+.site-mascot[data-layout='small'] .mascot-avatar,.site-mascot[data-layout='small'] .mascot-hint { display: none; }
+.site-mascot[data-layout='small'] .mascot-dialog { bottom: 0; }
+@media (max-width: 768px) { .site-mascot[data-layout='small'] { left: 12px; bottom: 72px; } .mascot-dialog { width: min(290px,calc(100vw - 24px)); } .mascot-topics button,.mascot-form input,.mascot-form button { min-height: 44px; } }
+@media (prefers-reduced-motion: reduce) { .mascot-rig { transition: none; } .site-mascot.is-happy .mascot-rig,.site-mascot.is-happy .mascot-sparkles { animation: none; } }

@@ -1102,12 +1102,15 @@ inject:
     - <link rel="stylesheet" href="/vendor/aplayer-1.10.1/APlayer.min.css">
     - <link rel="stylesheet" href="/css/custom.css">
     - <link rel="stylesheet" href="/css/sections.css">
+    - <link rel="stylesheet" href="/css/mascot.css?v=20261007-3">
   bottom:
     - <div id="kagiel-player"></div>
     - <script src="/vendor/aplayer-1.10.1/APlayer.min.js" defer></script>
     - <script src="/js/navigation.js" defer></script>
     - <script src="/js/services.js" defer></script>
-    - <script src="/js/appearance.js" defer></script>
+    - <script src="/js/appearance.js?v=20261007-1" defer></script>
+    - <script src="/js/mascot-dialogue.js?v=20261007-1" defer></script>
+    - <script src="/js/mascot.js?v=20261007-5" defer></script>
     - <script src="/js/music.js" defer></script>
     - <script src="/js/sections.js" defer></script>
 # CDN Settings

@@ -67,5 +67,21 @@ function enhanceAppearance($, record, locale) {
   const dock = $(`<div class="site-tools"><details class="music-dock"><summary><i class="fas fa-music" aria-hidden="true"></i><span>${escape(t.music)}</span></summary><div class="music-panel"><div class="music-panel-heading"><span>${escape(t.player)}</span><button class="music-close" type="button" aria-label="${escape(t.close)}">×</button></div></div></details><button type="button" class="mascot-toggle" hidden aria-pressed="false" data-show="${escape(t.showMascot)}" data-hide="${escape(t.hideMascot)}"><i class="fas fa-star" aria-hidden="true"></i><span></span></button></div>`);
   player.before(dock);
   dock.find('.music-panel').append(player);
+  // Outside #body-wrap: keep the companion and its conversation across PJAX.
+  $('body').append(`<aside id="site-mascot" class="site-mascot" aria-label="KGY看板娘" translate="no">
+    <button class="mascot-avatar" type="button" aria-label="和 KGY 聊聊" aria-controls="mascot-dialog" aria-expanded="false">
+      <span class="mascot-rig"><img class="mascot-fallback" src="/img/mascot/kgy-snow-girl-v3.png" alt="KGY：银灰长发、浅红眼睛，戴银色雪花项链的动漫少女" width="1024" height="1536"><canvas class="mascot-canvas" width="512" height="768" aria-hidden="true"></canvas></span>
+      <span class="mascot-sparkles" aria-hidden="true">✧</span>
+    </button>
+    <span class="mascot-hint">点我聊聊</span>
+    <section id="mascot-dialog" class="mascot-dialog" aria-label="和看板娘聊天" hidden>
+      <div class="mascot-dialog-heading"><span class="mascot-dialog-portrait" aria-hidden="true"><img src="/img/mascot/kgy-snow-girl-v3.png" alt="" width="1024" height="1536"></span><div><strong>KGY</strong><span>ONLY KGY</span></div><button class="mascot-close" type="button" aria-label="收起对话">×</button></div>
+      <details class="mascot-ai-panel"><summary>免费 AI 聊天<span data-mascot-ai-mode>未开启</span></summary><p>在你的设备上运行，不收聊天费用。首次下载约 300 MB，建议使用 Wi-Fi。</p><div class="mascot-ai-controls"><button type="button" data-mascot-ai>开启 AI 聊天</button><button type="button" data-mascot-ai-stop hidden>取消下载</button></div><progress data-mascot-ai-progress value="0" max="100" aria-label="AI 准备进度" hidden></progress><p data-mascot-ai-status role="status">开启前使用简短对话。聊天内容不会上传。</p></details>
+      <div class="mascot-chat-log" role="log" aria-label="和 KGY 的对话" aria-live="polite" aria-relevant="additions" tabindex="0"><p class="mascot-message" data-role="assistant">你好，我是 KGY。今天想聊什么？</p></div>
+      <div class="mascot-topics"><button type="button" data-mascot-topic="聊聊学习">聊聊学习</button><button type="button" data-mascot-topic="听点音乐">听点音乐</button><button type="button" data-mascot-topic="聊聊日常">聊聊日常</button><button type="button" data-mascot-topic="讲个笑话">讲个笑话</button></div>
+      <form class="mascot-form"><label for="mascot-input">和我说句话</label><div><input id="mascot-input" name="message" maxlength="320" placeholder="今天想聊什么？" autocomplete="off"><button type="submit" aria-label="发送给 KGY">发送</button></div></form>
+      <div class="mascot-actions"><a href="/archives/">翻翻文章</a><button type="button" data-mascot-music>打开音乐</button><button type="button" data-mascot-reset>重新聊</button><button type="button" data-mascot-hide>暂时隐藏</button></div>
+    </section>
+  </aside>`);
 }
 module.exports = { enhanceAppearance };
