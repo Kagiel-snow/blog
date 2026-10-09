@@ -47,7 +47,8 @@
 .mascot-form { margin: 12px 0; }
 .mascot-form label { display: block; margin-bottom: 5px; color: var(--snow-muted); font-size: 12px; }
 .mascot-form > div { display: flex; gap: 6px; }
-.mascot-form input { min-width: 0; width: 100%; padding: 8px; border: 1px solid var(--snow-border); border-radius: 8px; background: var(--snow-bg); color: var(--snow-text); font: inherit; }
+/* A 16px input font avoids iOS focus zoom, including on landscape phones. */
+.mascot-form input { min-width: 0; width: 100%; padding: 8px; border: 1px solid var(--snow-border); border-radius: 8px; background: var(--snow-bg); color: var(--snow-text); font: inherit; font-size: 16px; }
 .mascot-form input::placeholder { color: var(--snow-muted); }
 .mascot-form button { flex-shrink: 0; padding: 8px 10px; border-radius: 8px; background: var(--snow-blue); color: var(--snow-card); }
 .mascot-actions { display: flex; flex-wrap: wrap; gap: 12px; border-top: 1px solid var(--snow-border); padding-top: 10px; }
