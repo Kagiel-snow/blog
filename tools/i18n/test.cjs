@@ -59,6 +59,12 @@ test('single-source build preserves drafts, technical snippets, old language URL
   const cinema = cheerio.load(fs.readFileSync(path.join(output, 'movies/index.html'), 'utf8'));
   assert.equal(music('.track-play').length, catalog.tracks.length);
   assert.deepEqual(JSON.parse(music('#site-music-data').text()), catalog.tracks);
+  assert.deepEqual(JSON.parse(music('#site-music-config').text()), require('../../source/data/music.json'));
+  assert.equal(music('[data-music-search-form]').length, 1);
+  assert.equal(music('[data-music-playlist-form]').length, 1);
+  assert.equal(music('script[src^="/js/music-source.js"]').length, 1);
+  assert.equal(music('[data-music-results]').length, 1);
+  assert.doesNotMatch(music.html(), /\/music\/[^"\s]+\.mp3/);
   assert.equal(music('#body-wrap #kagiel-player, .js-pjax #kagiel-player').length, 0);
   assert.equal(music('#kagiel-player').length, 1);
   assert.equal(music('#twikoo-wrap').attr('data-comment-path'), '/music/');

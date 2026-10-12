@@ -1,6 +1,7 @@
 'use strict';
 const { escape } = require('./lib.cjs');
 const collection = require('../../source/data/collections.json');
+const music = require('../../source/data/music.json');
 const traffic = require('../../source/data/traffic.json');
 const { renderTraffic } = require('../traffic/cloudflare.cjs');
 
@@ -63,10 +64,12 @@ function enhanceAppearance($, record, locale) {
   const player = $('#kagiel-player');
   if (!player.length) return;
   $('body').append(`<script id="site-music-data" type="application/json">${JSON.stringify(collection.tracks).replace(/</g, '\\u003c')}</script>`);
+  $('body').append(`<script id="site-music-config" type="application/json">${JSON.stringify(music).replace(/</g, '\\u003c')}</script>`);
   const t = locale.appearance;
   const dock = $(`<div class="site-tools"><details class="music-dock"><summary><i class="fas fa-music" aria-hidden="true"></i><span>${escape(t.music)}</span></summary><div class="music-panel"><div class="music-panel-heading"><span>${escape(t.player)}</span><button class="music-close" type="button" aria-label="${escape(t.close)}">×</button></div></div></details><button type="button" class="mascot-toggle" hidden aria-pressed="false" data-show="${escape(t.showMascot)}" data-hide="${escape(t.hideMascot)}"><i class="fas fa-star" aria-hidden="true"></i><span></span></button></div>`);
   player.before(dock);
   dock.find('.music-panel').append(player);
+  dock.find('.music-panel').append('<p class="music-player-status" data-music-player-status role="status" aria-live="polite" translate="no">打开后加载网易云歌单。</p><div class="music-player-actions" translate="no"><button type="button" class="service-retry" data-music-retry-play hidden>重试播放</button><a data-music-current-source target="_blank" rel="noopener noreferrer" hidden>在网易云打开</a><a href="/music/">搜索与歌单</a></div>');
   // Outside #body-wrap: keep the companion and its conversation across PJAX.
   $('body').append(`<aside id="site-mascot" class="site-mascot" aria-label="KGY看板娘" translate="no">
     <button class="mascot-avatar" type="button" aria-label="和 KGY 聊聊" aria-controls="mascot-dialog" aria-expanded="false">

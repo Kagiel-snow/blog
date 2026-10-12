@@ -1,0 +1,9 @@
+{
+  "provider": "netease",
+  "endpoint": "https://api.i-meto.com/meting/api",
+  "playlistId": "3778678",
+  "playlistName": "网易云热歌榜",
+  "timeoutMs": 12000,
+  "fallbackCover": "/img/sky-window.jpg",
+  "pageSize": 20
+}

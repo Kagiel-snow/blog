@@ -1,0 +1,30 @@
+.music-browser { margin-bottom: 24px; }
+.music-search-form,.music-playlist-settings { padding: 22px; margin-bottom: 16px; border: 1px solid var(--snow-border); border-radius: 16px; background: var(--snow-card); }
+.music-search-form label,.music-playlist-settings label { display: block; margin-bottom: 10px; font-size: 14px; color: var(--snow-muted); }
+.music-input-row { display: flex; gap: 12px; }
+.music-input-row input { flex: 1; min-width: 0; padding: 11px 14px; border: 1px solid var(--snow-border); border-radius: 10px; background: var(--snow-soft); color: var(--snow-text); font: inherit; font-size: 16px; }
+.music-input-row input:focus-visible,.music-browser button:focus-visible { outline: 2px solid var(--snow-blue); outline-offset: 3px; }
+.music-browser button { font-family: inherit; cursor: pointer; }
+.music-playlist-settings summary { color: var(--snow-blue); font-size: 14px; cursor: pointer; }
+.music-playlist-settings[open] form { margin-top: 18px; }
+.music-browser-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin: 26px 0 20px; font-size: 13px; }
+.music-view-tabs { display: flex; gap: 8px; }
+.music-view-tabs button { padding: 9px 16px; border: 1px solid var(--snow-border); border-radius: 24px; color: var(--snow-muted); background: var(--snow-card); }
+.music-view-tabs button[aria-pressed=true] { color: var(--snow-card); background: var(--snow-blue); border-color: var(--snow-blue); }
+.music-list-title { font-size: 22px; margin: 0 0 8px; overflow-wrap: anywhere; }
+.music-browser-status,.music-player-status { font-size: 13px; line-height: 1.7; color: var(--snow-muted); overflow-wrap: anywhere; }
+.music-browser-status { margin: 0 0 16px; }
+.music-browser [data-music-retry-list] { margin-bottom: 16px; }
+.music-player-status { margin: 12px 2px 6px; }
+.music-player-actions { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; font-size: 12px; }
+.music-player-actions a { color: var(--snow-blue); }
+.music-browser [hidden],.music-player-actions [hidden] { display: none !important; }
+.music-load-more { display: flex; margin: 24px auto; }
+.track-source { display: inline-block; margin-top: 10px; color: var(--snow-muted); font-size: 12px; }
+.track-card .track-body p { overflow-wrap: anywhere; }
+.track-play { font-family: inherit; cursor: pointer; }
+@media (max-width: 600px) {
+  .music-search-form,.music-playlist-settings { padding: 18px 14px; }
+  .music-input-row { gap: 8px; }
+  .music-input-row .section-action { padding: 9px 12px; }
+}

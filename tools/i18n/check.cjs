@@ -2,6 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const cheerio = require('cheerio');
+const { createClient, parsePlaylistId } = require('../../source/js/music-source.js');
 const { ROOT, locales, files, origin, canonical, translations, legacy } = require('./lib.cjs');
 function check(output = path.join(ROOT, 'public')) {
   const records = JSON.parse(fs.readFileSync(path.join(output, 'i18n-routes.json'), 'utf8'));
@@ -29,12 +30,16 @@ function check(output = path.join(ROOT, 'public')) {
     if ($('#kagiel-player').length) {
       try {
         const tracks = JSON.parse($('#site-music-data').text());
-        if (!Array.isArray(tracks) || !tracks.length || new Set(tracks.map(t => t.id)).size !== tracks.length) throw new Error('empty or duplicate track IDs');
+        if (!Array.isArray(tracks) || new Set(tracks.map(t => t.id)).size !== tracks.length) throw new Error('invalid or duplicate track IDs');
+        const music = JSON.parse($('#site-music-config').text());
+        if ($('#site-music-config').length !== 1 || music.provider !== 'netease' || !music.playlistName) throw new Error('missing online music settings');
+        parsePlaylistId(music.playlistId); createClient(music); checkUrl(music.fallbackCover, rel);
         for (const track of tracks) {
           if (![track.id, track.name, track.artist, track.url, track.cover].every(v => typeof v === 'string' && v.length)) throw new Error('incomplete track metadata');
           checkUrl(track.url, rel); checkUrl(track.cover, rel);
         }
         for (const button of $('[data-track-id]').toArray()) if (!tracks.some(t => t.id === $(button).attr('data-track-id'))) throw new Error('unknown track button');
+        if ($('[data-music-browser]').length && (!$('[data-music-search-form]').length || !$('[data-music-playlist-form]').length)) throw new Error('missing music browsing controls');
       } catch (err) { errors.push(`${rel}: invalid music catalog (${err.message})`); }
     }
   }
