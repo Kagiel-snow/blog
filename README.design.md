@@ -38,6 +38,7 @@
 | 从概率空间理解概率的基本性质 | `probability-winter-white.jpg` | `【哲风壁纸】二次元-冬日.jpg` | 2358 × 1440 |
 | 用隔板法理解重复组合 | `repetition-black-blossoms.jpg` | `【哲风壁纸】111111-冷感.jpg` | 1920 × 1080 |
 | 从零理解 C 语言中的变量 | `c-variables-winter-blue.jpg` | `【哲风壁纸】eva-冬日-冬装.jpg` | 2048 × 1136 |
+| 用盒子模型彻底搞懂 C 语言变量 | `c-variables-boxes.svg` | 自绘 SVG | 1200 × 630 |
 
 新增文章时显式填写 `cover: /img/covers/文件名`，先检查这份清单和其他文章的 `cover`，避免重复使用。默认封面继续作为未指定封面时的兜底；历史译文不参与构建，无需同步修改。
 

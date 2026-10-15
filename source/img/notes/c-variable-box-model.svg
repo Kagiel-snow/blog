@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 440" role="img" aria-labelledby="title desc">
+  <title id="title">变量的盒子模型</title>
+  <desc id="desc">int age = 18 可以看成一个 int 规格的盒子，标签是 age，里面放着 18，盒子所在的位置编号就是地址。名字、类型、值、地址是变量的四个属性。</desc>
+  <rect width="1000" height="440" rx="20" fill="#f3f6f9"/>
+  <g font-family="'Microsoft YaHei','PingFang SC',sans-serif" fill="#344252">
+    <text x="40" y="55" font-size="26" font-weight="600">int age = 18;  一个变量的四个属性</text>
+    <rect x="35" y="85" width="930" height="320" rx="16" fill="#fff"/>
+    <rect x="330" y="150" width="240" height="170" rx="14" fill="#e6eef6" stroke="#b6cadd" stroke-width="3"/>
+    <rect x="385" y="128" width="130" height="44" rx="10" fill="#fdf1dc" stroke="#e2c48f" stroke-width="2"/>
+    <text x="450" y="158" font-size="24" text-anchor="middle" font-weight="600">age</text>
+    <text x="450" y="268" font-size="64" text-anchor="middle" fill="#426f98" font-weight="600">18</text>
+    <text x="450" y="352" font-size="20" text-anchor="middle" fill="#6b7b8c">位置编号 0x7ffd…（地址）</text>
+    <g stroke="#9aaabb" stroke-width="2" fill="none">
+      <path d="M385 150 L260 135"/>
+      <path d="M330 300 L260 300"/>
+      <path d="M570 230 L640 200"/>
+      <path d="M590 345 L640 345"/>
+    </g>
+    <g font-size="21">
+      <text x="70" y="128">名字（标签）</text>
+      <text x="70" y="158" font-size="17" fill="#6b7b8c">程序里用来找到它</text>
+      <text x="70" y="292">类型（盒子规格）</text>
+      <text x="70" y="322" font-size="17" fill="#6b7b8c">int：能装多大、怎么算</text>
+      <text x="655" y="195">值（盒子里的东西）</text>
+      <text x="655" y="225" font-size="17" fill="#6b7b8c">同一时间只有一个，可以被替换</text>
+      <text x="655" y="340">地址（放在哪里）</text>
+      <text x="655" y="370" font-size="17" fill="#6b7b8c">&amp;age 取得，scanf 靠它写入</text>
+    </g>
+  </g>
+</svg>
