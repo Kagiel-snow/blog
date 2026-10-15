@@ -26,19 +26,15 @@
 | 文章 | 本地封面文件 | 图库原文件 | 分辨率 |
 | --- | --- | --- | --- |
 | 你好呀 | `hello-blue-ribbon.jpg` | `【哲风壁纸】丝带-二次元-可爱.jpg` | 2358 × 1294 |
-| DDoS 是什么，记几个要点 | `ddos-rainy-city.png` | `【哲风壁纸】交通锥-城市街道.png` | 5120 × 2880 |
 | SQL 注入，先记一下 | `sql-silver-wings.jpg` | `【哲风壁纸】光影-动漫天使.jpg` | 4126 × 2358 |
 | 日语学习，先安排二十分钟 | `japanese-blue-street.jpg` | `【哲风壁纸】伞-动漫女孩-吉他.jpg` | 3226 × 1500 |
 | Network 笔记：LAN、以太网、CSMA/CD 和 PoE | `network-starry-night.jpg` | `【哲风壁纸】二次元-光环-十字架.jpg` | 4096 × 2272 |
 | 学会用日语说明租房需求 | `renting-snow-lane.jpg` | `【哲风壁纸】冬日-发饰-和服.jpg` | 2560 × 1440 |
-| 理清离散数学中的集合 | `sets-misty-mountains.png` | `【哲风壁纸】4K-山-新西兰.png` | 3840 × 2160 |
 | 从 Hello World 开始学习 C 语言 | `c-monochrome-guitar.png` | `【哲风壁纸】动漫-少女插画.png` | 5120 × 3200 |
-| 理解计算机中的数值表示与逻辑运算 | `numbers-cloud-door.png` | `【哲风壁纸】云-安逸-时空之门.png` | 1920 × 1080 |
 | 理清排列与组合的计数方法 | `counting-white-city.jpg` | `【哲风壁纸】jk-二次元-城市.jpg` | 3840 × 2032 |
 | 从概率空间理解概率的基本性质 | `probability-winter-white.jpg` | `【哲风壁纸】二次元-冬日.jpg` | 2358 × 1440 |
 | 用隔板法理解重复组合 | `repetition-black-blossoms.jpg` | `【哲风壁纸】111111-冷感.jpg` | 1920 × 1080 |
 | 从零理解 C 语言中的变量 | `c-variables-winter-blue.jpg` | `【哲风壁纸】eva-冬日-冬装.jpg` | 2048 × 1136 |
-| 用盒子模型彻底搞懂 C 语言变量 | `c-variables-boxes.svg` | 自绘 SVG | 1200 × 630 |
 
 本地封面保留不动；新文章改用下面的「外链二次元封面」，不再往仓库里添加图片。默认封面继续作为未指定封面时的兜底；历史译文不参与构建，无需同步修改。
 

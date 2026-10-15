@@ -1,5 +1,5 @@
 'use strict';
-const { escape: e } = require('./lib.cjs');
+const { escape: e, inspectContent } = require('./lib.cjs');
 const collection = require('../../source/data/collections.json');
 const music = require('../../source/data/music.json');
 const labels = require('../../i18n/sections.json');
@@ -17,6 +17,48 @@ function renderMusicBrowser() {
       <section class="music-video-tools" data-music-video-tools aria-label="查找音乐视频" hidden><a class="track-source" data-music-video-search-link href="https://search.bilibili.com/all" target="_blank" rel="noopener noreferrer">去 B 站查找更多版本 ↗</a><form data-music-video-form><label for="music-video-link">打开一个视频版本</label><div class="music-input-row"><input id="music-video-link" name="videoLink" type="text" maxlength="1000" required placeholder="粘贴 B 站视频链接或 BV 号" autocomplete="off"><button type="submit" class="section-action">打开视频播放器</button></div><p class="music-browser-status" data-music-video-error role="status" aria-live="polite"></p></form></section>
       <details class="music-playlist-settings"><summary>换一个网易云歌单</summary><form data-music-playlist-form><label for="music-playlist-id">歌单链接或 ID</label><div class="music-input-row"><input id="music-playlist-id" name="playlist" type="text" maxlength="300" required value="${e(music.playlistId)}" placeholder="歌单链接、分享文本或数字 ID"><button type="submit" class="section-action">载入歌单</button></div><p class="music-browser-status" data-music-playlist-error role="status" aria-live="polite" translate="no"></p><a class="track-source" data-music-input-source target="_blank" rel="noopener noreferrer" hidden>打开分享链接 ↗</a></form></details>
       <div class="music-browser-toolbar"><div class="music-view-tabs" role="group" aria-label="音乐列表"><button type="button" data-music-view="playlist" aria-pressed="true">歌单</button><button type="button" data-music-view="search" aria-pressed="false">搜索结果</button></div><a data-music-playlist-source href="https://music.163.com/#/playlist?id=${e(music.playlistId)}" target="_blank" rel="noopener noreferrer">网易云原歌单 ↗</a></div><h2 class="music-list-title" data-music-list-title translate="no">${e(music.playlistName)}</h2><p class="music-browser-status" data-music-browser-status role="status" aria-live="polite" translate="no">正在加载在线歌单…</p><button class="service-retry" type="button" data-music-retry-list hidden>重试加载</button><div class="track-grid" data-music-results></div><button class="section-action music-load-more" type="button" data-music-more hidden>显示更多歌曲</button><noscript><p>请启用 JavaScript 来搜索和点播，也可以直接打开上方的网易云歌单。</p></noscript></section>`;
+}
+
+// About page: an English profile card, a short self-introduction and
+// recent activity read from the published posts' dates at build time.
+const BIRTHDAY = '2009-02-26';
+const { lifeSince, formatLife } = require('../../source/js/sections.js');
+// Broad English subject for each study tag; the newest study note decides what I'm learning now.
+const SUBJECTS = { 'C语言': ['Programming', 'C'], '计算机基础': ['Computer science', 'the basics'], '软件工程': ['Software engineering', ''],
+  '计算机网络': ['Networking', ''], '网络安全': ['Cybersecurity', ''], '离散数学': ['Mathematics', 'discrete math'],
+  '概率论': ['Mathematics', 'probability'], '统计学': ['Mathematics', 'statistics'], '日语': ['Japanese', ''] };
+function currentSubject() {
+  const latest = inspectContent().filter(item => item.post && [].concat(item.doc.categories || [])[0] === '边学边记')
+    .sort((a, b) => new Date(b.doc.date) - new Date(a.doc.date))[0];
+  const tag = latest && [].concat(latest.doc.tags || []).find(name => SUBJECTS[name]);
+  return tag ? { subject: SUBJECTS[tag][0], focus: SUBJECTS[tag][1] } : null;
+}
+function renderAbout(locale, now = new Date()) {
+  const facts = [
+    ['Name', `<span class="glitch" data-text="Kagiel">Kagiel</span> <span class="profile-ipa" lang="en-fonipa">/ˈkɑːɡiːl/</span>`],
+    ['Born', `${BIRTHDAY.replace(/-/g, '.')} <span class="profile-alive" data-profile-alive data-birthday="${BIRTHDAY}">${formatLife(lifeSince(BIRTHDAY, now))}</span>`],
+    ['Now', 'Computer science student'],
+    ['Languages', 'Chinese · English · Japanese'],
+    ['Hometown', 'China'],
+    ['Based in', 'Japan · <abbr title="Japan Standard Time">JST</abbr> (UTC+9) <span class="profile-clock" data-profile-clock hidden></span>'],
+    ['Someday', 'AI security · writing novels']
+  ];
+  const interests = ['🎮 Cozy games', '🎧 Quiet music', '🌸 Anime', '📖 Novels', '🤖 AI', '🛡️ Cybersecurity'];
+  const bio = [
+    "Hi, I'm Kagiel. I live in Japan and study computer science at university.",
+    "I like relaxing games, quiet music, cheerful anime and easygoing novels.",
+    "I'm also interested in AI and cybersecurity."
+  ];
+  const routes = [['archives/', 'Read the notes', 'See what I wrote recently'], ['music/', 'Listen along', 'Play a few songs from my list'], ['Gallery/', 'Wallpapers', 'Browse the pictures I keep']];
+  const learning = currentSubject();
+  // Earlier milestones stay below the current subject, newest first.
+  const milestones = [['2025.04.01', 'Japanese', 'Started learning Japanese']];
+  const activity = `<ol class="learning-log">${learning ? `<li class="now-learning"><span class="activity-kind activity-learning">NOW LEARNING</span><strong>${e(learning.subject)}</strong>${learning.focus ? `<p>Right now: ${e(learning.focus)}</p>` : ''}</li>` : ''}${milestones.map(([date, subject, note]) => `<li class="past-learning"><time datetime="${date.replace(/\./g, '-')}">${date}</time><strong>${e(subject)}</strong><p>${e(note)}</p></li>`).join('')}</ol>`;
+  return `<div class="about-grid" lang="en" translate="no"><section class="profile-card">${image('/img/avatar.jpg','Kagiel','profile-avatar')}<span class="section-kicker">LIKE SNOW</span><h2><span class="glitch" data-text="Kagiel">Kagiel</span></h2>
+    <dl class="profile-facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+    <div class="interest-chips">${interests.map(x => `<span>${e(x)}</span>`).join('')}</div>${action('mailto:snow@kagiel.top','Say hi')}</section>
+    <section class="about-letter"><h2><span class="glitch" data-text="About me">About me</span></h2>${bio.map(x => `<p>${e(x)}</p>`).join('')}<div class="about-routes">${routes.map((x,i)=>`<a href="${locale.root+x[0]}"><span>${String(i+1).padStart(2,'0')}</span><div><strong>${e(x[1])}</strong><p>${e(x[2])}</p></div><span aria-hidden="true">↗</span></a>`).join('')}</div></section></div>
+    <section class="site-timeline" lang="en" translate="no"><h2><span class="glitch" data-text="Recent activity">Recent activity</span></h2>${activity}</section>`;
 }
 
 function renderSection($, record, locale) {
@@ -51,7 +93,7 @@ function renderSection($, record, locale) {
     const resources = [['https://hexo.io/','Hexo','H'],['https://butterfly.js.org/','Butterfly','B'],['https://www.irodori.jpf.go.jp/','いろどり','あ']];
     page.append(`<h2 class="section-label">${e(t.resources)}</h2><div class="resource-grid">${resources.map((r,i)=>`<a class="resource-card" href="${r[0]}" target="_blank" rel="noopener"><span class="resource-letter">${r[2]}</span><h3>${r[1]} <span aria-hidden="true">↗</span></h3><p>${e(t.resourceDescriptions[i])}</p></a>`).join('')}</div>`);
   } else if (key === 'about') {
-    page.append(`<div class="about-grid"><section class="profile-card">${image('/img/avatar.jpg','Kagiel','profile-avatar')}<span class="section-kicker">LIKE SNOW</span><h2>Kagiel</h2><div class="interest-chips">${t.interests.map(x=>`<span>${e(x)}</span>`).join('')}</div>${action('mailto:snow@kagiel.top',t.mail)}</section><section class="about-letter"><h2>${e(t.profile)}</h2><p>${e(t.siteText)}</p><div class="about-routes">${[['archives/',t.reading],['music/',locale.menu[5]],['Gallery/',locale.menu[6]]].map((x,i)=>`<a href="${locale.root+x[0]}"><span>${String(i+1).padStart(2,'0')}</span><div><strong>${e(x[1])}</strong><p>${e(t.routeText[i])}</p></div><span aria-hidden="true">↗</span></a>`).join('')}</div></section></div><section class="site-timeline"><h2>${e(t.timeline)}</h2><ol>${t.timelineItems.map(x=>`<li><time>${e(x[0])}</time><div><h3>${e(x[1])}</h3><p>${e(x[2])}</p></div></li>`).join('')}</ol></section>`);
+    page.append(renderAbout(locale));
   } else {
     const panel = $(`<section class="taxonomy-panel ${key}-panel"></section>`);
     panel.append(taxonomy);
@@ -63,4 +105,4 @@ function renderSection($, record, locale) {
     panel.append(comments); page.append(panel);
   }
 }
-module.exports = { renderSection, renderMusicBrowser };
+module.exports = { renderAbout, renderSection, renderMusicBrowser };

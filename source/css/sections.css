@@ -87,3 +87,39 @@ body[data-section] #aside-content { display: none; }
   .profile-card,.about-letter,.site-timeline,.taxonomy-panel { padding: 25px; }.site-timeline li { grid-template-columns: 65px 1fr; gap: 16px; padding-left: 15px; }
   .tags-panel .tag-cloud-list { gap: 10px; }.tags-panel .tag-cloud-list a { padding: 10px 16px; font-size: 16px !important; }
 }
+/* About profile: compact facts list, IPA and a live Tokyo clock. */
+.profile-card h2 { margin-bottom: 14px; }
+.profile-facts { margin: 0 0 22px; padding: 14px 16px; border: 1px dashed var(--snow-line); border-radius: 14px; background: var(--snow-card); text-align: left; font-size: 13px; }
+.profile-facts > div { display: grid; grid-template-columns: 84px 1fr; gap: 8px; padding: 5px 0; }
+.profile-facts > div + div { border-top: 1px solid var(--snow-border); }
+.profile-facts dt { color: var(--snow-blue); font-family: var(--kw-mono,monospace); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; line-height: 1.9; }
+.profile-facts dd { margin: 0; color: var(--snow-text); line-height: 1.7; }
+.profile-facts abbr { text-decoration: none; border-bottom: 1px dotted var(--snow-line); }
+.profile-ipa { margin-left: 4px; color: var(--snow-muted); font-family: 'Charis SIL','Doulos SIL','Segoe UI',serif; font-size: 13px; }
+.profile-clock { display: inline-block; margin-left: 4px; padding: 0 7px; border-radius: 10px; background: var(--snow-ice); color: var(--snow-blue); font-family: var(--kw-mono,monospace); font-size: 11px; }
+.about-letter > p + p { margin-top: 0; }
+
+/* Pixel glitch type: Pixelify Sans everywhere on the about page, with a still red / cyan split on highlights. */
+@font-face { font-family: 'Pixelify Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url('/vendor/pixelify-sans-5.3.0/pixelify-sans-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Pixelify Sans'; font-style: normal; font-weight: 700; font-display: swap; src: url('/vendor/pixelify-sans-5.3.0/pixelify-sans-latin-700-normal.woff2') format('woff2'); }
+body[data-section='about'] .section-heading h1,body[data-section='about'] .section-heading p,
+body[data-section='about'] .about-grid,body[data-section='about'] .site-timeline,
+body[data-section='about'] .about-grid :is(h2,h3,p,dt,dd,strong,span,a) { font-family: 'Pixelify Sans',var(--kw-mono,monospace); letter-spacing: .02em; }
+body[data-section='about'] .section-heading h1 { font-weight: 700; text-shadow: -2px 0 rgba(255,58,122,.5),2px 0 rgba(0,214,214,.55); }
+body[data-section='about'] .about-letter > p { font-size: 15.5px; line-height: 1.95; }
+body[data-section='about'] .profile-facts dt { font-size: 12px; letter-spacing: .1em; }
+.glitch { color: var(--snow-text); text-shadow: -1.5px 0 rgba(255,58,122,.55),1.5px 0 rgba(0,214,214,.6); }
+.about-letter .glitch { color: var(--snow-blue); }
+.profile-card h2 .glitch { font-size: 1.1em; font-weight: 700; }
+.profile-alive { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 10px; background: var(--kw-pink-soft,var(--snow-soft)); color: var(--kw-pink,var(--snow-blue)); font-size: 12px; font-variant-numeric: tabular-nums; }
+.activity-kind { display: inline-block; padding: 1px 9px; border-radius: 4px; font-size: 11px; letter-spacing: .14em; text-shadow: -1px 0 rgba(255,58,122,.45),1px 0 rgba(0,214,214,.5); }
+.activity-learning { background: var(--snow-ice); color: var(--snow-blue); }
+.site-timeline .learning-log { margin: 0 0 0 6px; padding: 0 0 0 24px; list-style: none; border-left: 2px dashed var(--snow-line); }
+.learning-log li { position: relative; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 4px 0 26px; border: 0; }
+.learning-log li:last-child { padding-bottom: 2px; }
+.learning-log li::before { content: ''; position: absolute; left: -31px; top: 9px; width: 12px; height: 12px; border-radius: 3px; background: var(--snow-card); border: 2px solid var(--kw-teal,var(--snow-blue)); }
+.learning-log .now-learning::before { background: var(--kw-pink,var(--snow-blue)); border-color: var(--kw-pink,var(--snow-blue)); box-shadow: 0 0 0 4px var(--kw-pink-soft,transparent); }
+.learning-log strong { font-size: 24px; font-weight: 700; color: var(--snow-text); text-shadow: -1.5px 0 rgba(255,58,122,.5),1.5px 0 rgba(0,214,214,.55); }
+.learning-log .past-learning strong { font-size: 19px; color: var(--snow-muted); text-shadow: none; }
+.learning-log time { color: var(--snow-blue); font-size: 13px; letter-spacing: .06em; }
+.learning-log p { flex-basis: 100%; margin: 0; color: var(--snow-muted); font-size: 14px; }

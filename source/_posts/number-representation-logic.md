@@ -7,7 +7,7 @@ translation_key: number-representation-logic
 permalink: posts/number-representation-logic/
 published: true
 description: 从进制与补码出发，整理实数的定点和浮点表示、IEEE 754、计算误差、真值表以及加法标准形。
-cover: /img/covers/numbers-cloud-door.png
+cover: https://i0.wp.com/w.wallhaven.cc/full/xe/wallhaven-xe9k93.jpg?w=1600&quality=80&strip=all
 tags:
   - 计算机基础
   - 学习笔记

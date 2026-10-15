@@ -7,7 +7,7 @@ translation_key: discrete-mathematics-sets
 permalink: posts/discrete-mathematics-sets/
 published: true
 description: 从元素与子集的区别出发，整理集合运算、幂集、笛卡尔积与常见证明方法。
-cover: /img/covers/sets-misty-mountains.png
+cover: https://i0.wp.com/w.wallhaven.cc/full/gw/wallhaven-gwmor7.jpg?w=1600&quality=80&strip=all
 tags:
   - 离散数学
   - 学习笔记

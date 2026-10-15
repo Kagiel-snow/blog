@@ -5,7 +5,7 @@ updated: '2026-10-02T18:00:00+09:00'
 lang: zh-CN
 translation_key: when-a-site-gets-crowded
 permalink: posts/when-a-site-gets-crowded/
-cover: /img/covers/ddos-rainy-city.png
+cover: https://i0.wp.com/w.wallhaven.cc/full/vp/wallhaven-vp25k3.jpg?w=1600&quality=80&strip=all
 tags:
   - 网络安全
   - 随手记

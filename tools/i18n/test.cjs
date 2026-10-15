@@ -118,3 +118,18 @@ test('single-source build preserves drafts, technical snippets, old language URL
   } finally { await new Promise(resolve => server.close(resolve)); }
   console.log('Fixture output: ' + output);
 });
+
+test('about page shows the birthday with time lived on the Tokyo calendar and one current subject', () => {
+  const { renderAbout } = require('./sections.cjs');
+  const { lifeSince, formatLife } = require('../../source/js/sections.js');
+  assert.equal(formatLife(lifeSince('2009-02-26', new Date('2026-10-15T09:05:07+09:00'))), '17y 7mo 19d 09h 05m 07s');
+  assert.equal(formatLife(lifeSince('2009-02-26', new Date('2027-02-25T23:59:59+09:00'))), '17y 11mo 30d 23h 59m 59s');
+  assert.equal(formatLife(lifeSince('2009-02-26', new Date('2027-02-26T00:00:00+09:00'))), '18y 0mo 0d 00h 00m 00s');
+  assert.equal(formatLife(lifeSince('2009-02-26', new Date('2026-03-01T00:00:00+09:00'))), '17y 0mo 3d 00h 00m 00s', 'February has 28 days in 2026');
+  const html = renderAbout({ root: '/' }, new Date('2026-10-15T00:00:00Z'));
+  assert.equal((html.match(/class="now-learning"/g) || []).length, 1, 'one current subject only');
+  assert.match(html, /NOW LEARNING<\/span><strong>[A-Za-z ]+<\/strong>/);
+  assert.equal((html.match(/<time /g) || []).length, 1, 'only the Japanese milestone carries a date');
+  assert.match(html, /<time datetime="2025-04-01">2025\.04\.01<\/time><strong>Japanese<\/strong>/);
+  assert.match(html, /Japan · <abbr title="Japan Standard Time">JST<\/abbr> \(UTC\+9\)/);
+});

@@ -7,7 +7,7 @@ translation_key: c-variables-boxes-in-depth
 permalink: posts/c-variables-boxes-in-depth/
 published: true
 description: 把变量看成贴了标签的盒子，依次讲清 sizeof、取值范围、溢出、字符编码、浮点误差、类型转换、复合赋值与地址；每个知识点都按例题、变式、规律展开，零基础也能举一反三。
-cover: /img/covers/c-variables-boxes.svg
+cover: https://i0.wp.com/w.wallhaven.cc/full/6l/wallhaven-6l2ppl.jpg?w=1600&quality=80&strip=all
 tags:
   - C语言
   - 学习笔记

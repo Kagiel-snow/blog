@@ -784,16 +784,16 @@ site_verification:
 
 theme_color:
   enable: true
-  main: "#426f98"
-  paginator: "#426f98"
-  button_hover: "#5b83a7"
-  text_selection: "#c6ddef"
-  link_color: "#426f98"
+  main: "#138a82"
+  paginator: "#138a82"
+  button_hover: "#f27ea9"
+  text_selection: "#ffe3ee"
+  link_color: "#138a82"
   meta_color: "#65778a"
-  hr_color: "#dfe7ef"
-  toc_color: "#426f98"
-  blockquote_padding_color: "#426f98"
-  scrollbar_color: "#9fb5c9"
+  hr_color: "#dceceb"
+  toc_color: "#138a82"
+  blockquote_padding_color: "#138a82"
+  scrollbar_color: "#39c5bb"
   meta_theme_color_light: "#f3f6f9"
   meta_theme_color_dark: "#17202b"
 
@@ -1101,10 +1101,11 @@ inject:
   head:
     - <link rel="stylesheet" href="/vendor/aplayer-1.10.1/APlayer.min.css">
     - <link rel="stylesheet" href="/css/custom.css">
-    - <link rel="stylesheet" href="/css/sections.css">
+    - <link rel="stylesheet" href="/css/sections.css?v=20261015-5">
     - <link rel="stylesheet" href="/css/anime-minimal.css?v=20261015-2">
     - <link rel="stylesheet" href="/css/music.css?v=20261015-5">
     - <link rel="stylesheet" href="/css/mascot.css?v=20261009-1">
+    - <link rel="stylesheet" href="/css/kawaii.css?v=20261015-1">
   bottom:
     - <div id="kagiel-player"></div>
     - <script src="/vendor/aplayer-1.10.1/APlayer.min.js" defer></script>
@@ -1119,7 +1120,8 @@ inject:
     - <script src="/js/music-layout.js?v=20261015-3" defer></script>
     - <script src="/js/music-catalog.js?v=20261015-3" defer></script>
     - <script src="/js/music.js?v=20261015-5" defer></script>
-    - <script src="/js/sections.js" defer></script>
+    - <script src="/js/sections.js?v=20261015-3" defer></script>
+    - <script src="/js/kawaii.js?v=20261015-1" defer></script>
 # CDN Settings
 # Don't modify the following settings unless you know how they work
 CDN:
