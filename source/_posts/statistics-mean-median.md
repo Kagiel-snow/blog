@@ -7,7 +7,7 @@ translation_key: statistics-mean-median
 permalink: posts/statistics-mean-median/
 published: true
 description: 通过缺席日数和两组小鼠体重数据计算均值与中位数，推导平方损失与绝对损失的最小化性质，并讨论离群值、稳健性、加权均值和 Excel 实现。
-cover: /img/covers/counting-white-city.jpg
+cover: https://i0.wp.com/w.wallhaven.cc/full/6l/wallhaven-6ld8xl.jpg?w=1600&quality=80&strip=all
 tags:
   - 统计学
   - 学习笔记

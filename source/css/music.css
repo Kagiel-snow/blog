@@ -28,3 +28,6 @@
   .music-input-row { gap: 8px; }
   .music-input-row .section-action { padding: 9px 12px; }
 }
+.track-card.is-unavailable { opacity: .62; }
+.track-card.is-unavailable > img { filter: grayscale(.85); }
+.track-card.is-unavailable .track-play { color: var(--snow-muted); background: transparent; border-style: dashed; }

@@ -44,7 +44,7 @@ class Element {
 }
 
 function harness() {
-  const listeners = {}, requests = [], timers = new Map(), instances = [], storage = new Map();
+  const listeners = {}, requests = [], timers = new Map(), instances = [], storage = new Map(), checks = new Map();
   let timerId = 0, browser;
   const config = { playlistId: '123', playlistName: '默认歌单', pageSize: 20, timeoutMs: 12000, fallbackCover: '/img/cover.jpg' };
   const container = new Element(), data = new Element('script'), settings = new Element('script'), dock = new Element('details');
@@ -109,7 +109,10 @@ function harness() {
     SiteMusicSource: {
       escapeHtml,
       parsePlaylistId: value => { if (!/^\d+$/.test(String(value))) throw new Error('invalid playlist'); return String(value); },
-      createClient: () => ({ request: (type, id, options) => new Promise((resolve, reject) => { requests.push({ type, id, signal: options.signal, resolve, reject }); }) })
+      createClient: () => ({
+        request: (type, id, options) => new Promise((resolve, reject) => { requests.push({ type, id, signal: options.signal, resolve, reject }); }),
+        check: track => Promise.resolve(checks.get(track.id) || 'unknown')
+      })
     }
   };
   context.window = context;
@@ -127,7 +130,7 @@ function harness() {
   };
   const dispatch = (name, event = {}) => (listeners[name] || []).forEach(listener => listener(event));
   const click = target => dispatch('click', { target, preventDefault() {} });
-  return { context, music: context.siteMusic, requests, timers, instances, controls, listeners, dock, data, playerStatus, retryPlay, currentSource, mountBrowser, dispatch, click, rerun };
+  return { context, music: context.siteMusic, requests, checks, timers, instances, controls, listeners, dock, data, playerStatus, retryPlay, currentSource, mountBrowser, dispatch, click, rerun };
 }
 
 async function load(h, tracks = [song('1'), song('2')], id = '123') {
@@ -181,25 +184,56 @@ test('PJAX and repeated script execution retain one player, playback time and ha
   assert.equal(h.controls.results.querySelectorAll('h2').length, 2);
 });
 
-test('media failure pauses and reselects the same song to cancel the vendor auto skip', async () => {
+test('a media failure marks the song locked and skips to the next one without the vendor timer', async () => {
   const h = harness(); await load(h); h.music.playTrack('netease:1');
-  const player = h.music.player, selected = player.list.index, priorSwitches = player.switches.length;
+  const player = h.music.player;
   player.emit('error'); await settle();
-  assert.equal(player.paused, true);
+  assert.equal(player.list.index, 1);
+  assert.equal(player.audio.src, song('2').url);
+  assert.equal(player.audio.paused, false);
+  assert.match(h.playerStatus.textContent, /暂无音源.*歌曲 2/);
+  assert.equal([...h.timers.values()].some(timer => timer.ms === 2000), false, 'the vendor 2-second skip must be cancelled');
+  assert.equal(h.requests.length, 1, 'failure must not load more metadata automatically');
+  h.music.playTrack('netease:1');
+  assert.equal(player.list.index, 1, 'a locked song is not played again');
+  assert.match(h.playerStatus.textContent, /会员或暂无版权/);
+});
+
+test('when every song is locked the player stops and offers a retry that clears the locks', async () => {
+  const h = harness(); await load(h); h.music.playTrack('netease:1');
+  const player = h.music.player;
+  player.emit('error'); await settle();
+  player.emit('error'); await settle();
   assert.equal(player.audio.paused, true);
-  assert.equal(player.list.index, selected);
-  assert.equal(player.switches.length, priorSwitches + 1);
-  assert.equal(player.switches.at(-1).url, song('1').url);
   assert.equal(h.retryPlay.hidden, false);
   assert.match(h.playerStatus.textContent, /暂时无法播放/);
   assert.equal(h.timers.size, 0, 'both the timeout and the vendor 2-second skip must be cancelled');
-  assert.equal(h.requests.length, 1, 'failure must not load more metadata automatically');
   h.click(h.retryPlay); await settle();
   assert.equal(player.audio.paused, false);
-  assert.equal(player.list.index, selected);
-  assert.equal(player.audio.src, song('1').url);
   assert.equal(h.retryPlay.hidden, true);
-  assert.equal([...h.timers.values()].some(timer => timer.ms === 2000), false);
+});
+
+test('a song that already played reconnects once from the same position before it is skipped', async () => {
+  const h = harness(); await load(h); h.music.playTrack('netease:1');
+  const player = h.music.player;
+  player.emit('playing'); player.audio.currentTime = 95;
+  player.emit('error'); await settle();
+  assert.equal(player.list.index, 0);
+  assert.equal(player.audio.currentTime, 95);
+  assert.equal(player.audio.paused, false);
+  assert.match(h.playerStatus.textContent, /重新连接/);
+  player.emit('error'); await settle();
+  assert.equal(player.list.index, 1);
+});
+
+test('automatic switches skip songs the mirror reports as locked before they stall', async () => {
+  const h = harness(); await load(h, [song('1'), song('2'), song('3')]);
+  h.checks.set('netease:2', 'unavailable');
+  h.music.playTrack('netease:1');
+  h.music.player.skipForward(); await settle(); await settle();
+  assert.equal(h.music.player.list.index, 2);
+  assert.equal(h.music.player.audio.src, song('3').url);
+  assert.equal(h.music.player.audio.paused, false);
 });
 
 test('next and direct list switches select the right source despite the early listswitch event', async () => {

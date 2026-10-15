@@ -7,7 +7,7 @@ translation_key: statistics-variance-standard-deviation
 permalink: posts/statistics-variance-standard-deviation/
 published: true
 description: 推导偏差平方和、样本方差与标准差，完整计算零件重量案例，解释自由度、无偏估计、点图、稳定算法与 Excel 统计函数。
-cover: /img/covers/probability-winter-white.jpg
+cover: https://i0.wp.com/w.wallhaven.cc/full/xe/wallhaven-xezz6z.jpg?w=1600&quality=80&strip=all
 tags:
   - 统计学
   - 学习笔记
