@@ -35,6 +35,12 @@ function enhanceAppearance($, record, locale) {
     icon.attr('aria-hidden', 'true');
     link.attr({ 'aria-label': '关注我的抖音（抖音号：SNMYKGY，新窗口打开）', title: '关注我的抖音 · SNMYKGY', rel: 'noopener noreferrer' });
   });
+  // The sidebar avatar opens the about page.
+  $('#aside-content .card-info .avatar-img').each((_, el) => {
+    const avatar = $(el);
+    if (avatar.parent('a').length) return;
+    avatar.wrap(`<a class="avatar-link" href="${escape(locale.root)}about/" title="About Kagiel" aria-label="About Kagiel"></a>`);
+  });
   $('#nav .menus_item > .site-page.group').attr('tabindex', '0');
   $('#sidebar-menus .menus_item:not(.i18n-menu) > .site-page.group').addClass('hide');
   const webinfo = $('.card-webinfo');

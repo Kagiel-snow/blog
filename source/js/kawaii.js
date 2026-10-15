@@ -1,5 +1,5 @@
 'use strict';
-// Kawaii layer: light snowfall, click sparks, a sleeping footer cat and a cute tab title.
+// Kawaii layer: slow light snowfall, click sparks, a sleeping footer cat and a cute tab title.
 // Everything is decorative: no network, no stored data except the snow on/off choice.
 (() => {
   if (window.siteKawaii) return;
@@ -23,8 +23,8 @@
     const big = Math.random() < 0.22;
     return { x: Math.random() * width, y: top ? Math.random() * height : -12,
       r: big ? 4 + Math.random() * 3 : 1.2 + Math.random() * 2, star: big,
-      vy: 0.35 + Math.random() * 0.6, sway: Math.random() * Math.PI * 2, spin: Math.random() * Math.PI,
-      tint: Math.random() < 0.18 ? 'pink' : 'ice' };
+      vy: 0.12 + Math.random() * 0.28, sway: Math.random() * Math.PI * 2, spin: Math.random() * Math.PI,
+      tint: Math.random() < 0.55 ? 'white' : 'ice' };
   }
   function resize() {
     ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -38,13 +38,15 @@
   }
   function draw() {
     ctx.clearRect(0, 0, width, height);
-    const ice = dark() ? 'rgba(235,250,255,.85)' : 'rgba(120,205,215,.75)';
-    const pink = dark() ? 'rgba(255,170,205,.8)' : 'rgba(242,126,169,.6)';
+    // Mostly white with pale blue; on the light page white flakes get a faint blue edge to stay visible.
+    const ice = dark() ? 'rgba(190,220,245,.8)' : 'rgba(150,190,225,.8)';
+    const white = dark() ? 'rgba(245,250,255,.9)' : 'rgba(255,255,255,.95)';
+    ctx.shadowColor = dark() ? 'transparent' : 'rgba(110,150,190,.55)'; ctx.shadowBlur = dark() ? 0 : 3;
     for (const f of flakes) {
-      f.y += f.vy; f.sway += 0.012; f.spin += 0.006;
-      f.x += Math.sin(f.sway) * 0.35;
+      f.y += f.vy; f.sway += 0.006; f.spin += 0.003;
+      f.x += Math.sin(f.sway) * 0.22;
       if (f.y > height + 12) Object.assign(f, flake(false));
-      ctx.strokeStyle = ctx.fillStyle = f.tint === 'pink' ? pink : ice;
+      ctx.strokeStyle = ctx.fillStyle = f.tint === 'white' ? white : ice;
       if (!f.star) { ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill(); continue; }
       ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.spin); ctx.lineWidth = 1.2; ctx.lineCap = 'round';
       for (let arm = 0; arm < 6; arm++) {
@@ -96,7 +98,7 @@
       spark.className = 'kw-spark'; spark.setAttribute('aria-hidden', 'true');
       spark.textContent = sparks[(Math.random() * sparks.length) | 0];
       spark.style.left = event.clientX - 7 + 'px'; spark.style.top = event.clientY - 7 + 'px';
-      spark.style.color = index % 3 === 0 ? 'var(--kw-pink)' : 'var(--kw-teal)';
+      spark.style.color = index % 2 === 0 ? 'var(--kw-blue)' : 'var(--kw-mist)';
       document.body.append(spark);
       const angle = (Math.PI * 2 * index) / 6 + Math.random() * 0.6, distance = 26 + Math.random() * 26;
       const animation = spark.animate([
@@ -110,19 +112,19 @@
   // ---- Footer cat: sleeps until clicked, then says one line and dozes off again.
   const lines = ['喵～', '今天也要好好学习喵', '雪好漂亮呀 ❄', '摸摸头可以哦', '再看一篇再睡喵', '♪ 要一起听歌吗', '(=^･ω･^=)'];
   const catSvg = `<svg viewBox="0 0 86 52" aria-hidden="true">
-    <path class="kw-cat-tail" d="M68 44 C82 44 84 30 76 26" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" style="color:#cfe9ee"/>
+    <path class="kw-cat-tail" d="M68 44 C82 44 84 30 76 26" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" style="color:#d5e2ee"/>
     <g class="kw-cat-body">
-      <ellipse cx="46" cy="42" rx="26" ry="11" fill="#fff" stroke="#9fcfd3" stroke-width="1.5"/>
-      <path d="M14 32 L17 18 L25 27 Z" fill="#fff" stroke="#9fcfd3" stroke-width="1.5" stroke-linejoin="round"/>
-      <path d="M33 27 L39 16 L42 30 Z" fill="#fff" stroke="#9fcfd3" stroke-width="1.5" stroke-linejoin="round"/>
-      <path d="M18 29 L18.5 22 L22.5 26.5 Z M36 26 L38.5 20.5 L40 27.5 Z" fill="#ffc6da"/>
-      <ellipse cx="28" cy="36" rx="16" ry="12" fill="#fff" stroke="#9fcfd3" stroke-width="1.5"/>
-      <g class="kw-cat-shut" fill="none" stroke="#4a6b73" stroke-width="1.6" stroke-linecap="round">
+      <ellipse cx="46" cy="42" rx="26" ry="11" fill="#fff" stroke="#a9bfd4" stroke-width="1.5"/>
+      <path d="M14 32 L17 18 L25 27 Z" fill="#fff" stroke="#a9bfd4" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M33 27 L39 16 L42 30 Z" fill="#fff" stroke="#a9bfd4" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M18 29 L18.5 22 L22.5 26.5 Z M36 26 L38.5 20.5 L40 27.5 Z" fill="#d3e0ec"/>
+      <ellipse cx="28" cy="36" rx="16" ry="12" fill="#fff" stroke="#a9bfd4" stroke-width="1.5"/>
+      <g class="kw-cat-shut" fill="none" stroke="#4d6378" stroke-width="1.6" stroke-linecap="round">
         <path d="M19 36 q3 2.4 6 0"/><path d="M31 36 q3 2.4 6 0"/>
       </g>
-      <g class="kw-cat-open" fill="#2c4a52"><ellipse cx="22" cy="35" rx="2" ry="2.6"/><ellipse cx="34" cy="35" rx="2" ry="2.6"/></g>
-      <ellipse cx="17" cy="40" rx="3" ry="1.6" fill="#ffc6da" opacity=".8"/><ellipse cx="39" cy="40" rx="3" ry="1.6" fill="#ffc6da" opacity=".8"/>
-      <path d="M26.5 39.5 q1.5 1.6 3 0" fill="none" stroke="#4a6b73" stroke-width="1.3" stroke-linecap="round"/>
+      <g class="kw-cat-open" fill="#33485c"><ellipse cx="22" cy="35" rx="2" ry="2.6"/><ellipse cx="34" cy="35" rx="2" ry="2.6"/></g>
+      <ellipse cx="17" cy="40" rx="3" ry="1.6" fill="#d3e0ec" opacity=".8"/><ellipse cx="39" cy="40" rx="3" ry="1.6" fill="#d3e0ec" opacity=".8"/>
+      <path d="M26.5 39.5 q1.5 1.6 3 0" fill="none" stroke="#4d6378" stroke-width="1.3" stroke-linecap="round"/>
     </g>
     <text class="kw-cat-z" x="44" y="18">z</text>
   </svg>`;

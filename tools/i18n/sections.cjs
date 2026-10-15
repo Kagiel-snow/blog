@@ -43,7 +43,7 @@ function renderAbout(locale, now = new Date()) {
     ['Based in', 'Japan · <abbr title="Japan Standard Time">JST</abbr> (UTC+9) <span class="profile-clock" data-profile-clock hidden></span>'],
     ['Someday', 'AI security · writing novels']
   ];
-  const interests = ['🎮 Cozy games', '🎧 Quiet music', '🌸 Anime', '📖 Novels', '🤖 AI', '🛡️ Cybersecurity'];
+  const interests = ['# cozy games', '# quiet music', '# anime', '# novels', '# AI', '# cybersecurity'];
   const bio = [
     "Hi, I'm Kagiel. I live in Japan and study computer science at university.",
     "I like relaxing games, quiet music, cheerful anime and easygoing novels.",
