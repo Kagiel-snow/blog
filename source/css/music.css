@@ -117,3 +117,6 @@ body:not([data-music-mode="catalog"]).music-video-open .site-mascot,body:not([da
   .music-video-tools .music-input-row input { flex-basis: 100%; }
   .music-video-tools .music-input-row button { margin-left: auto; }
 }
+.track-card.is-unavailable { opacity: .62; }
+.track-card.is-unavailable > img { filter: grayscale(.85); }
+.track-card.is-unavailable .track-play { color: var(--snow-muted); background: transparent; border-style: dashed; }

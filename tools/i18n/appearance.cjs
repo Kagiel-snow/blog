@@ -5,6 +5,8 @@ const music = require('../../source/data/music.json');
 const traffic = require('../../source/data/traffic.json');
 const { renderTraffic } = require('../traffic/cloudflare.cjs');
 const { renderMusicBrowser } = require('./sections.cjs');
+const covers = require('../covers/covers.cjs');
+const coverData = covers.load();
 
 // Enhance the generated theme DOM without forking Butterfly or touching articles.
 function enhanceAppearance($, record, locale) {
@@ -48,6 +50,17 @@ function enhanceAppearance($, record, locale) {
     runtime.attr('translate', 'no');
     const start = Date.parse(runtime.attr('data-publishdate'));
     if (Number.isFinite(start)) runtime.text(`${Math.max(0, Math.floor((Date.now() - start) / 86400000))} 天`);
+  }
+  // Remote covers: smaller copies in lists, and a local picture under the header if the host fails.
+  $('img').each((_, el) => {
+    const img = $(el), src = img.attr('src');
+    if (!covers.isRemote(src, coverData)) return;
+    img.attr({ src: covers.cardUrl(src, coverData), loading: 'lazy', decoding: 'async', referrerpolicy: 'no-referrer' });
+  });
+  const header = $('#page-header'), style = header.attr('style') || '';
+  const remote = style.match(/background-image:\s*url\(['"]?([^'"()]+)['"]?\)/);
+  if (remote && covers.isRemote(remote[1], coverData)) {
+    header.attr('style', style.replace(remote[0], `background-image: url('${remote[1]}'), url('${coverData.fallback}')`));
   }
   const compactCards = '#aside-content .card-archives, #aside-content .card-webinfo' + (record.kind === 'home' ? ', #aside-content .card-recent-post' : '');
   renderTraffic($, traffic);

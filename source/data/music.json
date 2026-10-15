@@ -5,7 +5,10 @@
   "searchProvider": "audius",
   "audiusAppName": "KagielBlog",
   "audiusApiKey": "",
-  "endpoint": "https://api.i-meto.com/meting/api",
+  "endpoints": [
+    "https://api.i-meto.com/meting/api",
+    "https://api.injahow.cn/meting/"
+  ],
   "videoEndpoint": "",
   "openAudioEndpoint": "",
   "audioAlternatives": {
@@ -21,5 +24,6 @@
   },
   "timeoutMs": 12000,
   "fallbackCover": "/img/sky-window.jpg",
-  "pageSize": 20
+  "pageSize": 20,
+  "maxSkips": 8
 }

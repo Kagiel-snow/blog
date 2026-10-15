@@ -172,7 +172,7 @@ test('network, HTTP and malformed responses fail clearly and leave no timeout be
 
 test('timeouts and user cancellation reject even when fetch ignores abort, then clean up', async () => {
   const h = harness();
-  const pending = h.api.createClient({ timeoutMs: 4321 }).request('playlist', '123');
+  const pending = h.api.createClient({ timeoutMs: 4321, endpoints: ['https://one.example/api'] }).request('playlist', '123');
   const assertion = assert.rejects(pending, error => error.code === 'TIMEOUT');
   assert.equal([...h.timers.values()][0].ms, 4321);
   [...h.timers.values()][0].fn();
@@ -181,7 +181,7 @@ test('timeouts and user cancellation reject even when fetch ignores abort, then 
   assert.equal(h.timers.size, 0);
   h.requests[0].resolve({ ok: true, json: async () => [row()] });
   const external = new AbortController();
-  const cancelled = h.api.createClient().request('song', '456', { signal: external.signal });
+  const cancelled = h.api.createClient({ endpoints: ['https://one.example/api'] }).request('song', '456', { signal: external.signal });
   const cancelledAssertion = assert.rejects(cancelled, error => error.code === 'ABORTED');
   external.abort();
   await cancelledAssertion;
@@ -198,6 +198,46 @@ test('invalid request/config inputs cannot launch a network request', async () =
     await assert.rejects(client.request(type, input), error => error.code === 'INVALID_REQUEST');
   }
   assert.throws(() => h.api.createClient({ endpoint: 'http://insecure.example/api' }), /HTTPS/);
+  assert.throws(() => h.api.createClient({ endpoints: ['https://ok.example/api', 'http://insecure.example/api'] }), /HTTPS/);
   assert.equal(h.requests.length, 0);
+  assert.equal(h.timers.size, 0);
+});
+
+test('a failing mirror falls back to the next one, which is then preferred, and reads name/artist rows', async () => {
+  const calls = [];
+  const h = harness(async url => {
+    calls.push(new URL(url).host);
+    if (url.startsWith('https://down.example/')) throw new TypeError('Failed to fetch');
+    return { ok: true, json: async () => [{ name: '镜像歌曲', artist: '镜像歌手', url: 'https://up.example/?type=url&id=7', pic: 'https://up.example/p.jpg' }] };
+  });
+  const client = h.api.createClient({ endpoints: ['https://down.example/api', 'https://up.example/meting/'] });
+  const tracks = await client.request('playlist', '123');
+  assert.deepEqual(calls, ['down.example', 'up.example']);
+  assert.equal(tracks[0].name, '镜像歌曲');
+  assert.equal(tracks[0].artist, '镜像歌手');
+  await client.request('search', '再来一次');
+  assert.deepEqual(calls, ['down.example', 'up.example', 'up.example']);
+  assert.equal(h.timers.size, 0);
+});
+
+test('song checks treat redirects as playable, 4xx as locked, and errors as unknown', async () => {
+  const replies = { 1: { type: 'opaqueredirect', status: 0 }, 2: { type: 'cors', status: 404, ok: false }, 3: { type: 'cors', status: 503, ok: false } };
+  const seen = [];
+  const h = harness(async (url, options) => {
+    seen.push(options.method + ' ' + options.redirect);
+    const id = new URL(url).searchParams.get('id');
+    if (id === '4') throw new TypeError('Failed to fetch');
+    return replies[id];
+  });
+  const client = h.api.createClient();
+  const track = id => ({ url: 'https://api.example/meting?type=url&id=' + id });
+  assert.equal(await client.check(track(1)), 'ok');
+  assert.equal(await client.check(track(2)), 'unavailable');
+  assert.equal(await client.check(track(3)), 'unknown');
+  assert.equal(await client.check(track(4)), 'unknown');
+  assert.equal(await client.check({ url: 'javascript:alert(1)' }), 'unavailable');
+  assert.equal(await client.check(track(2)), 'unavailable');
+  assert.equal(seen.length, 4, 'definite answers are cached');
+  assert.ok(seen.every(item => item === 'GET manual'), 'redirects are not followed, so no audio is downloaded');
   assert.equal(h.timers.size, 0);
 });

@@ -61,7 +61,7 @@ class Element {
 
 function harness(options = {}) {
   const listeners = {}, requests = [], videoRequests = [], videoInspections = [], audioRequests = [], widgets = [],
-    timers = new Map(), instances = [], storage = new Map(Object.entries(options.storage || {}));
+    timers = new Map(), instances = [], storage = new Map(Object.entries(options.storage || {})), checks = new Map();
   let timerId = 0, browser;
   const config = { playlistId: '123', playlistName: '默认歌单', pageSize: 20, timeoutMs: 12000, fallbackCover: '/img/cover.jpg',
     audioAlternatives: {}, ...options.config };
@@ -156,7 +156,10 @@ function harness(options = {}) {
       parsePlaylistId,
       officialAudioUrl: options.withoutOfficialFallback ? undefined : officialAudioUrl,
       parseVideoId, parseVideoLink, videoEmbedUrl, videoSearchUrl, parseSoundCloudUrl, soundCloudEmbedUrl, soundCloudSearchUrl,
-      createClient: () => ({ request: (type, id, options) => new Promise((resolve, reject) => { requests.push({ type, id, signal: options.signal, resolve, reject }); }) }),
+      createClient: () => ({
+        request: (type, id, options) => new Promise((resolve, reject) => { requests.push({ type, id, signal: options.signal, resolve, reject }); }),
+        check: track => Promise.resolve(checks.get(track.id) || 'unknown')
+      }),
       createVideoClient: () => ({
         request: (query, options) => new Promise((resolve, reject) => { videoRequests.push({ query, signal: options.signal, resolve, reject }); }),
         ...(options.videoInspect ? { inspect: (value, options) => new Promise((resolve, reject) => {
@@ -208,7 +211,7 @@ function harness(options = {}) {
   };
   const dispatch = (name, event = {}) => (listeners[name] || []).forEach(listener => listener(event));
   const click = target => dispatch('click', { target, preventDefault() {} });
-  return { context, music: context.siteMusic, requests, videoRequests, videoInspections, audioRequests, widgets, timers, instances, controls,
+  return { context, music: context.siteMusic, requests, checks, videoRequests, videoInspections, audioRequests, widgets, timers, instances, controls,
     listeners, dock, data, playerStatus, retryPlay, currentSource, videoDock, videoFrame, videoTitle, videoSource, videoStatus, findVideo,
     findOpenAudio, reloadExternal, changeVersion,
     documentBody, documentHead, mountBrowser, dispatch, click, rerun, storage, config };
@@ -272,6 +275,58 @@ test('PJAX and repeated script execution retain one player, playback time and ha
   assert.equal(h.controls.results.querySelectorAll('h2').length, 2);
 });
 
+test('a media failure marks the song locked and skips to the next one without the vendor timer', async () => {
+  const h = harness({ withoutOfficialFallback: true }); await load(h); h.music.playTrack('netease:1');
+  const player = h.music.player;
+  player.emit('error'); await settle();
+  assert.equal(player.list.index, 1);
+  assert.equal(player.audio.src, song('2').url);
+  assert.equal(player.audio.paused, false);
+  assert.match(h.playerStatus.textContent, /暂无音源.*歌曲 2/);
+  assert.equal([...h.timers.values()].some(timer => timer.ms === 2000), false, 'the vendor 2-second skip must be cancelled');
+  assert.equal(h.requests.length, 1, 'failure must not load more metadata automatically');
+  h.music.playTrack('netease:1');
+  assert.equal(player.list.index, 1, 'a locked song is not played again');
+  assert.match(h.playerStatus.textContent, /会员或暂无版权/);
+});
+
+test('when every song is locked the player stops and offers a retry that clears the locks', async () => {
+  const h = harness({ withoutOfficialFallback: true }); await load(h); h.music.playTrack('netease:1');
+  const player = h.music.player;
+  player.emit('error'); await settle();
+  player.emit('error'); await settle();
+  assert.equal(player.audio.paused, true);
+  assert.equal(h.retryPlay.hidden, false);
+  assert.match(h.playerStatus.textContent, /暂时无法播放/);
+  assert.equal(h.timers.size, 0, 'both the timeout and the vendor 2-second skip must be cancelled');
+  h.click(h.retryPlay); await settle();
+  assert.equal(player.audio.paused, false);
+  assert.equal(h.retryPlay.hidden, true);
+});
+
+test('a song that already played reconnects once from the same position before it is skipped', async () => {
+  const h = harness({ withoutOfficialFallback: true }); await load(h); h.music.playTrack('netease:1');
+  const player = h.music.player;
+  player.emit('playing'); player.audio.currentTime = 95;
+  player.emit('error'); await settle();
+  assert.equal(player.list.index, 0);
+  assert.equal(player.audio.currentTime, 95);
+  assert.equal(player.audio.paused, false);
+  assert.match(h.playerStatus.textContent, /重新连接/);
+  player.emit('error'); await settle();
+  assert.equal(player.list.index, 1);
+});
+
+test('automatic switches skip songs the mirror reports as locked before they stall', async () => {
+  const h = harness({ withoutOfficialFallback: true }); await load(h, [song('1'), song('2'), song('3')]);
+  h.checks.set('netease:2', 'unavailable');
+  h.music.playTrack('netease:1');
+  h.music.player.skipForward(); await settle(); await settle();
+  assert.equal(h.music.player.list.index, 2);
+  assert.equal(h.music.player.audio.src, song('3').url);
+  assert.equal(h.music.player.audio.paused, false);
+});
+
 test('the first media failure tries the official public source for the same song and cancels vendor auto skip', async () => {
   const h = harness(); await load(h); h.music.playTrack('netease:1');
   const player = h.music.player, selected = player.list.index, priorSwitches = player.switches.length;
@@ -307,7 +362,7 @@ test('successful public fallback clears its load timeout and survives PJAX', asy
 });
 
 test('clicking the same song resumes a successful fallback at its existing position', async () => {
-  const h = harness(); await load(h); h.music.playTrack('netease:1');
+  const h = harness(); await load(h, [song('1')]); h.music.playTrack('netease:1');
   const player = h.music.player;
   player.emit('error'); await settle();
   player.audio.readyState = 4; player.emit('playing');
@@ -325,7 +380,7 @@ test('clicking the same song resumes a successful fallback at its existing posit
 });
 
 test('a second media failure stops on the same song and exposes retry and the official page', async () => {
-  const h = harness(); await load(h); h.music.playTrack('netease:1');
+  const h = harness(); await load(h, [song('1')]); h.music.playTrack('netease:1');
   const player = h.music.player, selected = player.list.index;
   player.emit('error'); await settle();
   assert.equal(player.audio.src, officialAudioUrl(song('1')));
@@ -341,7 +396,7 @@ test('a second media failure stops on the same song and exposes retry and the of
 });
 
 test('a public source load timeout stops instead of repeatedly falling back', async () => {
-  const h = harness(); await load(h); h.music.playTrack('netease:1');
+  const h = harness(); await load(h, [song('1')]); h.music.playTrack('netease:1');
   const player = h.music.player;
   player.emit('error'); await settle();
   const previousPlays = player.playCalls;
@@ -355,7 +410,7 @@ test('a public source load timeout stops instead of repeatedly falling back', as
 });
 
 test('late repeated source errors remain stopped and never schedule another fallback or vendor skip', async () => {
-  const h = harness(); await load(h); h.music.playTrack('netease:1');
+  const h = harness(); await load(h, [song('1')]); h.music.playTrack('netease:1');
   const player = h.music.player;
   player.emit('error'); await settle();
   player.emit('error'); await settle();
@@ -369,7 +424,7 @@ test('late repeated source errors remain stopped and never schedule another fall
 });
 
 test('an explicit retry restarts the original source and permits one public fallback again', async () => {
-  const h = harness(); await load(h); h.music.playTrack('netease:1');
+  const h = harness(); await load(h, [song('1')]); h.music.playTrack('netease:1');
   const player = h.music.player, selected = player.list.index;
   player.emit('error'); await settle(); player.emit('error'); await settle();
   h.click(h.retryPlay); await settle();
@@ -404,7 +459,7 @@ test('selecting another song gives that song its own bounded fallback attempt', 
 });
 
 test('resuming from a terminal error retries the original source and resets the bounded fallback', async () => {
-  const h = harness(); await load(h); h.music.playTrack('netease:1');
+  const h = harness(); await load(h, [song('1')]); h.music.playTrack('netease:1');
   const player = h.music.player;
   player.emit('error'); await settle(); player.emit('error'); await settle();
   player.play(); await settle();
@@ -419,7 +474,7 @@ test('resuming from a terminal error retries the original source and resets the 
 });
 
 test('a missing optional fallback helper retains the bounded error and explicit retry behavior', async () => {
-  const h = harness({ withoutOfficialFallback: true }); await load(h); h.music.playTrack('netease:1');
+  const h = harness({ withoutOfficialFallback: true }); await load(h, [song('1')]); h.music.playTrack('netease:1');
   const player = h.music.player;
   player.emit('error'); await settle();
   assert.equal(player.audio.paused, true);
@@ -1017,7 +1072,7 @@ test('a curated public version is attempted once after both native audio sources
 
 test('an unmapped native song stops after its bounded sources and never guesses a public match', async () => {
   const h = harness({ config: { audioAlternatives: { 'netease:999': { url: openAudio().permalinkUrl, name: '另一首歌', artist: '另一位歌手' } } } });
-  h.mountBrowser(); await load(h); h.music.playTrack('netease:1');
+  h.mountBrowser(); await load(h, [song('1')]); h.music.playTrack('netease:1');
   h.music.player.emit('error'); h.music.player.emit('error'); await settle();
   assert.equal(h.audioRequests.length, 0);
   assert.equal(h.videoRequests.length, 0);
@@ -1103,4 +1158,18 @@ test('changing playlists preserves the currently playing linked public version u
   assert.equal(h.videoFrame.querySelector('iframe'), null);
   assert.equal(h.music.player.audio.paused, false);
   assert.equal(h.music.player.audio.src, song('3').url);
+});
+
+test('a song tries its official public source before it is marked locked and skipped', async () => {
+  const h = harness(); await load(h); h.music.playTrack('netease:1');
+  const player = h.music.player;
+  player.emit('error'); await settle();
+  assert.equal(player.list.index, 0);
+  assert.equal(player.audio.src, officialAudioUrl(song('1')));
+  player.emit('error'); await settle();
+  assert.equal(player.list.index, 1);
+  assert.equal(player.audio.src, song('2').url);
+  assert.equal(player.audio.paused, false);
+  assert.match(h.playerStatus.textContent, /暂无音源.*歌曲 2/);
+  assert.equal(h.requests.length, 1);
 });

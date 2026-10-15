@@ -7,7 +7,7 @@ translation_key: cybersecurity-law-framework
 permalink: posts/cybersecurity-law-framework/
 published: true
 description: 以现行网络安全法为依据，系统梳理网络运营者责任、等级保护、数据保护、关键信息基础设施、事件处置与安全测试边界，并结合技术案例和练习理解法律义务。
-cover: /img/covers/network-starry-night.jpg
+cover: https://i0.wp.com/w.wallhaven.cc/full/d8/wallhaven-d8v5jm.jpg?w=1600&quality=80&strip=all
 tags:
   - 网络安全
   - 学习笔记

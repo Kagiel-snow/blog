@@ -1,0 +1,173 @@
+{
+  "provider": "Wallhaven",
+  "note": "只在这里保存图片链接，不下载到仓库。图片版权归原作者，使用前可在 page 链接查看作者与来源。",
+  "proxy": "https://i0.wp.com/{image}?w={width}&quality=80&strip=all",
+  "widths": {
+    "cover": 1600,
+    "card": 800
+  },
+  "fallback": "/img/snowfall.jpg",
+  "covers": [
+    {
+      "id": "6ld8xl",
+      "title": "天空之镜 · 云与城市倒影",
+      "image": "w.wallhaven.cc/full/6l/wallhaven-6ld8xl.jpg",
+      "page": "https://wallhaven.cc/w/6ld8xl",
+      "resolution": "3840x2160"
+    },
+    {
+      "id": "xezz6z",
+      "title": "蓝白插画 · 云朵车站",
+      "image": "w.wallhaven.cc/full/xe/wallhaven-xezz6z.jpg",
+      "page": "https://wallhaven.cc/w/xezz6z",
+      "resolution": "3840x2160"
+    },
+    {
+      "id": "lyylpl",
+      "title": "蓝色天空 · 鲸与花瓣",
+      "image": "w.wallhaven.cc/full/ly/wallhaven-lyylpl.jpg",
+      "page": "https://wallhaven.cc/w/lyylpl",
+      "resolution": "5932x3337"
+    },
+    {
+      "id": "9oolmx",
+      "title": "夏日云 · 道口少女",
+      "image": "w.wallhaven.cc/full/9o/wallhaven-9oolmx.jpg",
+      "page": "https://wallhaven.cc/w/9oolmx",
+      "resolution": "3840x2160"
+    },
+    {
+      "id": "6l2ppl",
+      "title": "白裙少女 · 海与天空",
+      "image": "w.wallhaven.cc/full/6l/wallhaven-6l2ppl.jpg",
+      "page": "https://wallhaven.cc/w/6l2ppl",
+      "resolution": "5906x3321"
+    },
+    {
+      "id": "gwmor7",
+      "title": "浅蓝羽翼",
+      "image": "w.wallhaven.cc/full/gw/wallhaven-gwmor7.jpg",
+      "page": "https://wallhaven.cc/w/gwmor7",
+      "resolution": "3840x2160"
+    },
+    {
+      "id": "zpzv3v",
+      "title": "冰晶 · 冒险队伍",
+      "image": "w.wallhaven.cc/full/zp/wallhaven-zpzv3v.png",
+      "page": "https://wallhaven.cc/w/zpzv3v",
+      "resolution": "1920x1080"
+    },
+    {
+      "id": "e89ok8",
+      "title": "蓝框画 · 云上飞行",
+      "image": "w.wallhaven.cc/full/e8/wallhaven-e89ok8.jpg",
+      "page": "https://wallhaven.cc/w/e89ok8",
+      "resolution": "2880x1620"
+    },
+    {
+      "id": "yqgj3l",
+      "title": "青色海湾 · 远眺",
+      "image": "w.wallhaven.cc/full/yq/wallhaven-yqgj3l.jpg",
+      "page": "https://wallhaven.cc/w/yqgj3l",
+      "resolution": "3840x2160"
+    },
+    {
+      "id": "d8v5jm",
+      "title": "蓝调夜色 · 黑发少女",
+      "image": "w.wallhaven.cc/full/d8/wallhaven-d8v5jm.jpg",
+      "page": "https://wallhaven.cc/w/d8v5jm",
+      "resolution": "7559x4252"
+    },
+    {
+      "id": "je1kdw",
+      "title": "灰调线稿 · 月下少女",
+      "image": "w.wallhaven.cc/full/je/wallhaven-je1kdw.png",
+      "page": "https://wallhaven.cc/w/je1kdw",
+      "resolution": "2560x1440"
+    },
+    {
+      "id": "vpq7m8",
+      "title": "灰白街角 · 白衣少女",
+      "image": "w.wallhaven.cc/full/vp/wallhaven-vpq7m8.png",
+      "page": "https://wallhaven.cc/w/vpq7m8",
+      "resolution": "3763x2117"
+    },
+    {
+      "id": "w5lpm6",
+      "title": "海边站台 · 蓝色水面",
+      "image": "w.wallhaven.cc/full/w5/wallhaven-w5lpm6.png",
+      "page": "https://wallhaven.cc/w/w5lpm6",
+      "resolution": "2560x1440"
+    },
+    {
+      "id": "d8oe73",
+      "title": "夏日路边 · 少女与云",
+      "image": "w.wallhaven.cc/full/d8/wallhaven-d8oe73.jpg",
+      "page": "https://wallhaven.cc/w/d8oe73",
+      "resolution": "4000x2250"
+    },
+    {
+      "id": "216y9y",
+      "title": "水下与湖畔 · 夏日",
+      "image": "w.wallhaven.cc/full/21/wallhaven-216y9y.png",
+      "page": "https://wallhaven.cc/w/216y9y",
+      "resolution": "4800x2700"
+    },
+    {
+      "id": "qrm3dl",
+      "title": "白色樱花 · 俯视小路",
+      "image": "w.wallhaven.cc/full/qr/wallhaven-qrm3dl.jpg",
+      "page": "https://wallhaven.cc/w/qrm3dl",
+      "resolution": "3840x2160"
+    },
+    {
+      "id": "vp25k3",
+      "title": "玻璃温室 · 银发少女",
+      "image": "w.wallhaven.cc/full/vp/wallhaven-vp25k3.jpg",
+      "page": "https://wallhaven.cc/w/vp25k3",
+      "resolution": "10000x5625"
+    },
+    {
+      "id": "xe9k93",
+      "title": "青蓝长发 · 水中城市",
+      "image": "w.wallhaven.cc/full/xe/wallhaven-xe9k93.jpg",
+      "page": "https://wallhaven.cc/w/xe9k93",
+      "resolution": "10240x5760"
+    },
+    {
+      "id": "8ge251",
+      "title": "海岸 · 青春群像",
+      "image": "w.wallhaven.cc/full/8g/wallhaven-8ge251.jpg",
+      "page": "https://wallhaven.cc/w/8ge251",
+      "resolution": "2048x1152"
+    },
+    {
+      "id": "yqgge7",
+      "title": "蓝色小花 · 草地",
+      "image": "w.wallhaven.cc/full/yq/wallhaven-yqgge7.png",
+      "page": "https://wallhaven.cc/w/yqgge7",
+      "resolution": "3838x2158"
+    },
+    {
+      "id": "lyykvy",
+      "title": "青色留白 · 蓝发少女",
+      "image": "w.wallhaven.cc/full/ly/wallhaven-lyykvy.png",
+      "page": "https://wallhaven.cc/w/lyykvy",
+      "resolution": "6400x3600"
+    },
+    {
+      "id": "gwdpy3",
+      "title": "蓝白室内 · 城市窗景",
+      "image": "w.wallhaven.cc/full/gw/wallhaven-gwdpy3.jpg",
+      "page": "https://wallhaven.cc/w/gwdpy3",
+      "resolution": "3840x2160"
+    },
+    {
+      "id": "ly21ly",
+      "title": "夜色城市 · 灰白少女",
+      "image": "w.wallhaven.cc/full/ly/wallhaven-ly21ly.png",
+      "page": "https://wallhaven.cc/w/ly21ly",
+      "resolution": "3840x2160"
+    }
+  ]
+}

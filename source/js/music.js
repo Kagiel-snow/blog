@@ -40,6 +40,11 @@
   let audioInput = '', audioError = '', selectedAudio, selectedVideoPage = 1, selectedVideoTrack;
   let externalGeneration = 0, externalController, widget, widgetApiPromise, alternativeUsed = false, externalForSongId;
   const unavailableVideos = new Set();
+  // Songs the mirror reported as VIP/region locked, and how many we skipped in a row.
+  const unavailable = new Set(), checking = new Set();
+  let skipped = 0, resumed = null, checkGeneration = 0, notice = '';
+  const maxSkips = config.maxSkips || 8;
+  const check = song => client.check ? client.check(song).catch(() => 'unknown') : Promise.resolve('unknown');
   const player = new APlayer({ container, fixed: false, mini: false, autoplay: false,
     theme: '#426f98', loop: 'all', order: 'random', preload: 'none', volume: 0.7,
     mutex: true, listFolded: true, audio: [] });
@@ -62,10 +67,11 @@
   function sync() {
     const song = current();
     document.querySelectorAll('[data-track-id]').forEach(button => {
-      const active = !player.audio.paused && song?.id === button.dataset.trackId;
+      const id = button.dataset.trackId, active = !player.audio.paused && song?.id === id, locked = unavailable.has(id);
       button.closest('.track-card')?.classList.toggle('is-playing', active);
+      button.closest('.track-card')?.classList.toggle('is-unavailable', locked);
       const label = button.querySelector('span');
-      if (label) label.textContent = active ? '正在播放' : '播放';
+      if (label) label.textContent = active ? '正在播放' : locked ? '暂无音源' : '播放';
     });
     const link = element('[data-music-current-source]');
     if (link) { link.hidden = !song; if (song) link.href = song.sourceUrl; }
@@ -304,6 +310,24 @@
     });
     browser.querySelector('[data-music-more]').hidden = state.loading || state.tracks.length <= shown;
     sync();
+    checkVisible(state.tracks.slice(0, shown));
+  }
+  // Label locked songs on the music page ahead of time, two light requests at a time.
+  function checkVisible(tracks) {
+    const generation = ++checkGeneration;
+    const pending = tracks.filter(song => song.id.startsWith('netease:') && !unavailable.has(song.id) && !checking.has(song.id));
+    const next = () => {
+      if (generation !== checkGeneration || !element('[data-music-browser]')) return;
+      const song = pending.shift();
+      if (!song) return;
+      checking.add(song.id);
+      check(song).then(result => {
+        if (result === 'unavailable') { unavailable.add(song.id); sync(); }
+        else if (result === 'unknown') checking.delete(song.id);
+        next();
+      });
+    };
+    next(); next();
   }
   async function load(type, value) {
     const key = type === 'playlist' ? 'id' : 'query';
@@ -348,15 +372,44 @@
   function playTrack(id) {
     const song = queue.get(id) || states[view].tracks.find(item => item.id === id);
     if (!song) return;
+    const dock = element('.music-dock'); if (dock) dock.open = true;
+    if (unavailable.has(id)) {
+      playbackStatus(`《${song.name}》需要会员或暂无版权，换一首试试。`); sync();
+      return;
+    }
     addToQueue([song]);
     document.querySelectorAll('video').forEach(video => video.pause());
+    skipped = 0;
     const index = player.list.audios.findIndex(item => item.id === id);
     if (player.list.index !== index || mediaFailed || player.audio.error) {
       mediaFailed = false; fallbackUsed = false; player.list.switch(index);
     }
     playbackStatus(`正在连接《${song.name}》…`);
     player.play();
-    const dock = element('.music-dock'); if (dock) dock.open = true;
+  }
+  function nextPlayable() {
+    const audios = player.list.audios;
+    for (let step = 1; step < audios.length; step++) {
+      const index = (player.list.index + step) % audios.length;
+      if (!unavailable.has(audios[index].id)) return index;
+    }
+    return -1;
+  }
+  // Skip a locked song while keeping the listener's place in the queue.
+  function skipLocked(song) {
+    const index = nextPlayable();
+    if (index < 0 || skipped >= maxSkips) {
+      mediaFailed = true; clearTimeout(mediaTimer); player.pause();
+      player.list.switch(player.list.index);
+      playbackStatus('连续几首都暂时无法播放，可稍后重试或换一个歌单。', true); sync();
+      return;
+    }
+    skipped++;
+    clearTimeout(mediaTimer);
+    player.list.switch(index);
+    const next = current();
+    notice = `《${song?.name || '这首歌'}》暂无音源，已跳到《${next?.name || '下一首'}》。`;
+    player.play();
   }
   function failPlayback() {
     if (mediaFailed) {
@@ -365,11 +418,26 @@
       player.pause(); player.list.switch(player.list.index);
       player.notice?.('此音源暂时不可播放。', 2000); return;
     }
-    const fallback = typeof officialAudioUrl === 'function' ? officialAudioUrl(current()) : null;
+    const song = current();
+    clearTimeout(mediaTimer);
+    // Signed audio links expire after a long pause; reload once from the same spot.
+    const position = player.audio.currentTime || 0;
+    if (song && song.started && resumed !== song.id && !fallbackUsed) {
+      resumed = song.id;
+      player.list.switch(player.list.index);
+      if (position > 0) {
+        player.audio.currentTime = position;
+        player.audio.addEventListener?.('loadedmetadata', () => { player.audio.currentTime = position; }, { once: true });
+      }
+      notice = `正在重新连接《${song.name}》…`;
+      player.play();
+      return;
+    }
+    const fallback = typeof officialAudioUrl === 'function' ? officialAudioUrl(song) : null;
     if (!fallbackUsed && fallback && !player.paused) {
       // The platform still decides which tracks it can supply. This fallback
       // uses its public endpoint and never sends an owner's login/session.
-      fallbackUsed = true; clearTimeout(mediaTimer); player.pause();
+      fallbackUsed = true; player.pause();
       player.list.switch(player.list.index);
       player.audio.src = fallback;
       player.notice?.('正在尝试网易云备用音源…', 2000);
@@ -377,20 +445,24 @@
       player.play();
       return;
     }
-    mediaFailed = true; clearTimeout(mediaTimer); player.pause();
-    // Switching the paused item cancels APlayer's scheduled error skip. With
-    // preload:none it won't fetch again until the visitor explicitly retries.
-    player.list.switch(player.list.index);
-    player.notice?.('此音源暂时不可播放。', 2000);
-    playbackStatus('这首歌暂时无法播放，可重试或找视频版本。', true); render(); sync();
-    const song = current(), alternative = song && config.audioAlternatives?.[song.id];
+    const alternative = song && config.audioAlternatives?.[song.id];
     if (alternative && !alternativeUsed) {
+      mediaFailed = true; player.pause();
+      // Switching the paused item cancels APlayer's scheduled error skip. With
+      // preload:none it won't fetch again until the visitor explicitly retries.
+      player.list.switch(player.list.index);
+      player.notice?.('此音源暂时不可播放。', 2000);
+      render(); sync();
       alternativeUsed = true; playbackStatus(`正在检查《${song.name}》的公开音频版本…`);
       const generation = externalGeneration + 1;
       void openAudio(alternative.url, { forSongId: song.id }).then(opened => {
         if (!opened && generation === externalGeneration && current()?.id === song.id && mediaFailed) playbackStatus('音频来源暂时不可用，可重试、找其他音频或视频版本。', true);
       });
+      return;
     }
+    // No other source for this song: mark it and move on, up to maxSkips in a row.
+    if (song) unavailable.add(song.id);
+    skipLocked(song);
   }
   function watchMedia() {
     clearTimeout(mediaTimer);
@@ -399,8 +471,17 @@
   player.on('listswitch', event => {
     const song = queue.get(player.list.audios[event.index]?.id);
     if (song?.id !== currentId) {
-      closeVideo(); currentId = song?.id; mediaFailed = false; fallbackUsed = false; alternativeUsed = false; clearTimeout(mediaTimer);
+      closeVideo(); currentId = song?.id; mediaFailed = false; fallbackUsed = false; alternativeUsed = false; resumed = null; notice = ''; clearTimeout(mediaTimer);
       playbackStatus(song ? `已选择《${song.name}》。` : '选择一首歌曲开始播放。');
+      // APlayer's own next/ended handling may land on a locked song; check before it stalls.
+      if (song && !player.paused) {
+        if (unavailable.has(song.id)) queueMicrotask(() => { if (current()?.id === song.id) skipLocked(song); });
+        else check(song).then(result => {
+          if (result !== 'unavailable') return;
+          unavailable.add(song.id); sync();
+          if (current()?.id === song.id && !song.started && !player.paused) skipLocked(song);
+        });
+      }
     }
     queueMicrotask(sync);
   });
@@ -408,7 +489,7 @@
     closeVideo();
     if (mediaFailed) { fallbackUsed = false; alternativeUsed = false; }
     mediaFailed = false;
-    playbackStatus(current() ? (player.audio.readyState < 3 ? `正在连接《${current().name}》…` : `正在播放《${current().name}》`) : '选择一首歌曲开始播放。');
+    playbackStatus(notice || (current() ? (player.audio.readyState < 3 ? `正在连接《${current().name}》…` : `正在播放《${current().name}》`) : '选择一首歌曲开始播放。'));
     if (player.audio.readyState < 3) watchMedia(); sync();
   });
   player.on('pause', () => {
@@ -419,9 +500,14 @@
   ['canplay', 'playing'].forEach(name => player.on(name, () => {
     clearTimeout(mediaTimer);
     player.notice?.('', 0);
-    if (!player.paused && current()) playbackStatus(`正在播放《${current().name}》`);
+    // Keep a skip notice visible so the listener knows why the song changed.
+    if (!player.paused && current()) playbackStatus(notice.includes('已跳到') ? notice : `正在播放《${current().name}》`);
     sync();
   }));
+  player.on('playing', () => {
+    const song = current();
+    if (song) { song.started = true; skipped = 0; }
+  });
   ['waiting', 'loadstart'].forEach(name => player.on(name, watchMedia));
   player.on('error', failPlayback);
   document.addEventListener('submit', event => {
@@ -469,7 +555,11 @@
     else if (target.hasAttribute('data-music-retry-list')) { const key = activeStateKey(); load(key, states[key][key === 'playlist' ? 'id' : 'query']); }
     else if (target.hasAttribute('data-music-retry-play')) {
       const song = current();
-      if (song) { mediaFailed = false; fallbackUsed = false; alternativeUsed = false; player.list.switch(player.list.index); playTrack(song.id); }
+      if (song) {
+        // A manual retry clears the locks so a recovered mirror gets another chance.
+        unavailable.clear(); mediaFailed = false; fallbackUsed = false; alternativeUsed = false; resumed = null;
+        player.list.switch(player.list.index); playTrack(song.id);
+      }
     }
   });
   element('.music-dock')?.addEventListener('toggle', event => { if (event.target.open) ensurePlaylist(); });

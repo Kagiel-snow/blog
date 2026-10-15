@@ -1,0 +1,103 @@
+/* Anime minimal layer: grey / white / blue, hairlines, small kickers and sparkles.
+   Loaded after custom.css; only refines tokens and surfaces, never Butterfly source. */
+:root {
+  --snow-bg: #f4f6f9; --snow-card: #fff; --snow-soft: #eef3f8;
+  --snow-text: #2f3a47; --snow-muted: #75859a; --snow-blue: #4f7cab;
+  --snow-border: #e2e8ef; --snow-shadow: 0 1px 2px rgba(47,58,71,.04);
+  --snow-ice: #dce8f4; --snow-line: rgba(79,124,171,.18); --snow-glass: rgba(255,255,255,.78);
+  --snow-dot: rgba(79,124,171,.09); --snow-radius: 18px;
+  --global-bg: var(--snow-bg); --card-bg: var(--snow-card); --font-color: var(--snow-text);
+  --text-highlight-color: var(--snow-text); --card-meta: var(--snow-muted); --theme-color: var(--snow-blue);
+}
+[data-theme='dark'] {
+  --snow-bg: #141a22; --snow-card: #1b232e; --snow-soft: #222c39;
+  --snow-text: #dfe6ee; --snow-muted: #9aa9ba; --snow-blue: #93b9de;
+  --snow-border: #2b3644; --snow-shadow: 0 1px 2px rgba(0,0,0,.2);
+  --snow-ice: #263547; --snow-line: rgba(147,185,222,.2); --snow-glass: rgba(27,35,46,.8);
+  --snow-dot: rgba(147,185,222,.06);
+  --global-bg: var(--snow-bg); --card-bg: var(--snow-card); --font-color: var(--snow-text);
+  --text-highlight-color: var(--snow-text); --card-meta: var(--snow-muted); --theme-color: var(--snow-blue);
+}
+
+/* Quiet paper: a faint dot grid like a sketchbook page. */
+body,#web_bg { background-color: var(--snow-bg) !important; background-image: radial-gradient(var(--snow-dot) 1px,transparent 1.2px) !important; background-size: 22px 22px !important; }
+::selection { background: var(--snow-ice); color: var(--snow-text); }
+html { scrollbar-color: #b9c8d8 transparent; scrollbar-width: thin; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #c3d0dd; border-radius: 8px; }
+[data-theme='dark'] ::-webkit-scrollbar-thumb { background: #3a4a5d; }
+
+/* Header: a small kicker above the title and a soft fade into the page. */
+#page-header.full_page::after { content: ''; position: absolute; inset: auto 0 0; height: 90px; background: linear-gradient(transparent,var(--snow-bg)); pointer-events: none; }
+#page-header.full_page #site-title::before { content: 'KAGIEL ✦ LIKE SNOW'; display: block; margin-bottom: 14px; font-size: 12px; font-weight: 500; letter-spacing: .32em; opacity: .85; }
+#page-header.full_page #site-title { font-weight: 500; letter-spacing: .06em; }
+#page-header.full_page #site-subtitle { position: relative; padding-left: 18px; border-left: 2px solid rgba(255,255,255,.7); }
+#page-header.full_page #scroll-down { display: none; }
+#page-header.post-bg::before { background: linear-gradient(0deg,rgba(20,32,48,.72),rgba(20,32,48,.12) 70%); }
+#post-info .post-title { font-weight: 500; letter-spacing: .02em; }
+
+/* Glass navigation once the page scrolls. */
+#page-header.nav-fixed #nav { background: var(--snow-glass); -webkit-backdrop-filter: saturate(1.4) blur(14px); backdrop-filter: saturate(1.4) blur(14px); box-shadow: none; }
+#nav #site-name { letter-spacing: .04em; }
+#nav .menus_items .menus_item .menus_item_child { border-radius: 14px; }
+
+/* Cards: hairline borders, no heavy shadow, blue edge on hover. */
+#recent-posts .recent-post-item,#aside-content .card-widget,
+.layout > #post,.layout > #page,.layout > #archive,.layout > #tag,.layout > #category,
+#pagination.site-pagination { border-radius: var(--snow-radius); box-shadow: var(--snow-shadow); }
+#recent-posts { counter-reset: note; }
+#recent-posts .recent-post-item { position: relative; counter-increment: note; overflow: hidden; }
+#recent-posts .recent-post-item > .recent-post-info::before { content: 'NO.' counter(note,decimal-leading-zero) '  ·  NOTE'; display: block; margin-bottom: 10px; color: var(--snow-blue); font-size: 11px; letter-spacing: .24em; white-space: pre; }
+#recent-posts .recent-post-item > .recent-post-info > .article-title { font-weight: 500; letter-spacing: .01em; background: linear-gradient(var(--snow-ice),var(--snow-ice)) 0 92%/0 .42em no-repeat; transition: background-size .35s ease; }
+#recent-posts .recent-post-item:hover > .recent-post-info > .article-title { background-size: 100% .42em; color: var(--snow-text); }
+#recent-posts .recent-post-item .post_cover img.post-bg { filter: saturate(.9) brightness(1.02); transition: transform .6s ease,filter .4s ease; }
+#recent-posts .recent-post-item:hover .post_cover img.post-bg { filter: saturate(1) brightness(1.04); }
+#recent-posts .recent-post-item::after { content: '✦'; position: absolute; top: 14px; right: 18px; color: var(--snow-blue); font-size: 13px; opacity: 0; transform: scale(.6) rotate(-20deg); transition: opacity .3s,transform .3s; pointer-events: none; }
+#recent-posts .recent-post-item:has(.post_cover.right)::after { right: auto; left: 18px; }
+#recent-posts .recent-post-item:hover::after { opacity: .9; transform: none; }
+#recent-posts .recent-post-item .article-meta-wrap,#recent-posts .recent-post-item .article-meta-wrap a { color: var(--snow-muted); }
+@media (min-width: 901px) {
+  #recent-posts .recent-post-item:hover { transform: translateY(-2px); border-color: var(--snow-line); box-shadow: 0 12px 30px rgba(55,90,128,.08); }
+}
+
+/* Sidebar: small uppercase labels and quieter controls. */
+#aside-content .item-headline { display: flex; align-items: center; gap: 8px; font-weight: 500; letter-spacing: .04em; }
+#aside-content .item-headline i { color: var(--snow-blue); }
+#aside-content .card-info .author-info-name { letter-spacing: .05em; }
+#aside-content .card-info .avatar-img { border: 3px solid var(--snow-card); box-shadow: 0 0 0 1px var(--snow-border),0 8px 22px rgba(79,124,171,.14); }
+#aside-content .card-info #card-info-btn { border: 1px solid var(--snow-line); background: transparent; }
+#aside-content .card-info #card-info-btn:hover { background: var(--snow-soft); }
+#aside-content .card-tag-cloud a,.tag-cloud-list a { margin: 0 6px 8px 0 !important; padding: 2px 11px; border: 1px solid var(--snow-border); border-radius: 20px; background: var(--snow-soft); color: var(--snow-muted) !important; font-size: 13px !important; transition: color .2s,border-color .2s; }
+#aside-content .card-tag-cloud a:hover,.tag-cloud-list a:hover { color: var(--snow-blue) !important; border-color: var(--snow-line); }
+#aside-content .card-categories ul.card-category-list > .card-category-list-item a:hover { background: var(--snow-soft); color: var(--snow-blue); }
+
+/* Reading: wide margins, blue hairlines and a quiet heading marker. */
+#article-container h2 { padding-bottom: .35em; border-bottom: 1px dashed var(--snow-line); }
+#article-container h2::before,#article-container h3::before { content: '✦' !important; font-family: inherit !important; font-size: .62em !important; top: .2em; }
+#article-container hr { border: 0; height: 1px; background: linear-gradient(90deg,transparent,var(--snow-line),transparent); margin: 2.4em 0; }
+#article-container hr::before { display: none; }
+#article-container blockquote { border-left-width: 2px; background: linear-gradient(90deg,var(--snow-soft),transparent); }
+#article-container :not(pre) > code { padding: .12em .45em; border-radius: 6px; background: var(--snow-soft); color: var(--snow-blue); }
+#article-container table th { background: var(--snow-soft); }
+#article-container img { box-shadow: 0 6px 22px rgba(47,58,71,.08); }
+
+/* Footer: one line, a small snowflake. */
+#footer { background: transparent; border-top: 1px dashed var(--snow-line); }
+#footer .footer-other::before { content: '✦'; display: block; margin-bottom: 8px; color: var(--snow-blue); opacity: .7; }
+
+/* Floating tools: same pill language as the cards. */
+.music-dock > summary,.mascot-toggle,#rightside > div > button,#rightside > div > a { border-color: var(--snow-line); background: var(--snow-glass); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.music-panel { border-radius: var(--snow-radius); }
+
+/* Section pages share the kicker style. */
+.section-kicker { letter-spacing: .22em; font-weight: 500; }
+.track-card,.listening-banner { border-radius: var(--snow-radius); }
+
+@media (max-width: 768px) {
+  #page-header.full_page #site-title::before { margin-bottom: 8px; font-size: 11px; letter-spacing: .26em; }
+  #recent-posts .recent-post-item > .recent-post-info::before { margin-bottom: 6px; }
+  #recent-posts .recent-post-item::after { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #recent-posts .recent-post-item > .recent-post-info > .article-title { transition: none; }
+}

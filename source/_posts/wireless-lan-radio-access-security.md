@@ -7,7 +7,7 @@ translation_key: wireless-lan-radio-access-security
 permalink: posts/wireless-lan-radio-access-security/
 published: true
 description: 从无线电波、IEEE 802.11 和 CSMA/CA 出发，系统整理无线局域网的组织方式、安全机制及 RFID、NFC、蓝牙、Zigbee、蜂窝网络与物联网通信，并配有计算例题和练习解答。
-cover: /img/covers/network-starry-night.jpg
+cover: https://i0.wp.com/w.wallhaven.cc/full/ly/wallhaven-lyylpl.jpg?w=1600&quality=80&strip=all
 tags:
   - 学习笔记
   - 计算机网络

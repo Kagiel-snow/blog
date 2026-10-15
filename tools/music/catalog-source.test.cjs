@@ -92,7 +92,7 @@ test('catalog-only search and song requests reject before creating any timeout o
 });
 
 test('catalog-only playlist cancellation and timeout retain the original cleanup and late-response guards', async () => {
-  const h = harness(), client = h.api.createClient({ catalogOnly: true, timeoutMs: 4321 });
+  const h = harness(), client = h.api.createClient({ catalogOnly: true, timeoutMs: 4321, endpoints: ['https://api.i-meto.com/meting/api'] });
   const pending = client.request('playlist', '123');
   const timedOut = assert.rejects(pending, error => error.code === 'TIMEOUT');
   [...h.timers.values()][0].fn(); await timedOut;
