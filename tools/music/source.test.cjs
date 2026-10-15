@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '../../source/js/music-source.js'), 'utf8');
-const { normalizeTracks, parsePlaylistId, escapeHtml } = require('../../source/js/music-source.js');
+const { normalizeTracks, officialAudioUrl, parsePlaylistId, escapeHtml } = require('../../source/js/music-source.js');
 const row = (id = '123', extra = {}) => ({
   title: '歌曲 <名字>', author: '歌手 & 伙伴',
   url: 'https://api.i-meto.com/meting/api?server=netease&type=url&id=' + id,
@@ -32,7 +32,10 @@ test('playlist input accepts numeric IDs and only intended HTTPS NetEase playlis
   for (const [input, expected] of [
     [' 123 ', '123'], [123, '123'], ['000123', '123'],
     ['https://music.163.com/playlist?id=123&userid=456', '123'],
-    ['https://music.163.com/#/playlist?id=123', '123']
+    ['https://music.163.com/#/playlist?id=123', '123'],
+    ['https://music.163.com/m/playlist?app_version=9.5.50&id=123&sharedId=456', '123'],
+    ['分享共享歌单: 記憶 https://music.163.com/m/playlist?id=123&sharedId=456 (@网易云音乐)', '123'],
+    ['分享歌单：記憶 https://music.163.com/#/playlist?id=123 （@网易云音乐）', '123']
   ]) assert.equal(parsePlaylistId(input), expected);
   for (const input of [
     null, {}, -1, Number.MAX_SAFE_INTEGER + 1, '1e4', '123&server=qq',
@@ -42,9 +45,23 @@ test('playlist input accepts numeric IDs and only intended HTTPS NetEase playlis
     'https://user:pass@music.163.com/playlist?id=123',
     'https://music.163.com/song?id=123', 'https://music.163.com/#/song?id=123',
     'https://music.163.com/playlist?id=123&id=456',
+    'https://music.163.com/playlist?id=123 https://music.163.com/playlist?id=456',
     'https://music.163.com/playlist?id=123%27)',
     'https://music.163.com/playlist?id=' + '1'.repeat(21)
   ]) assert.throws(() => parsePlaylistId(input), /歌单/);
+});
+
+test('configured NetEase short links work in complete share text while unknown links explain the next step', () => {
+  const aliases = { 'https://163cn.tv/birPYWIu': '13512426282' };
+  for (const input of [
+    'https://163cn.tv/birPYWIu',
+    '分享共享歌单: 記憶 https://163cn.tv/birPYWIu (@网易云音乐)'
+  ]) assert.equal(parsePlaylistId(input, aliases), '13512426282');
+  assert.throws(() => parsePlaylistId('分享歌单: 另一份 https://163cn.tv/unknown (@网易云音乐)', aliases), error =>
+    error.code === 'SHORT_LINK' && error.url === 'https://163cn.tv/unknown' && /打开.*分享链接.*完整歌单链接/.test(error.message));
+  assert.throws(() => parsePlaylistId('https://163cn.tv.evil.example/birPYWIu', aliases), /歌单/);
+  assert.throws(() => parsePlaylistId('https://evil.example/birPYWIu', { 'https://evil.example/birPYWIu': '123' }), /歌单/);
+  assert.throws(() => parsePlaylistId('https://163cn.tv/birPYWIu', { 'https://163cn.tv/birPYWIu': '123&server=qq' }), /歌单|短链/);
 });
 
 test('tracks retain plain metadata, deduplicate by song ID and cap the usable queue', () => {
@@ -56,7 +73,10 @@ test('tracks retain plain metadata, deduplicate by song ID and cap the usable qu
   });
   assert.equal(escapeHtml(tracks[0].name), '歌曲 &lt;名字&gt;');
   assert.equal(escapeHtml('&<>"\''), '&amp;&lt;&gt;&quot;&#39;');
-  assert.equal(normalizeTracks(Array.from({ length: 250 }, (_, index) => row(String(index + 1)))).length, 200);
+  const sharedPlaylist = normalizeTracks(Array.from({ length: 255 }, (_, index) => row(String(index + 1))));
+  assert.equal(sharedPlaylist.length, 255, 'a real 255-song shared playlist must not lose its final 55 songs');
+  assert.equal(sharedPlaylist.at(-1).songId, '255');
+  assert.equal(normalizeTracks(Array.from({ length: 1001 }, (_, index) => row(String(index + 1)))).length, 1000);
   assert.deepEqual(normalizeTracks([]), []);
   assert.throws(() => normalizeTracks({ code: 200, songs: [] }), /格式/);
 });
@@ -77,6 +97,35 @@ test('unsafe audio URLs are skipped and unusable covers fall back to local artwo
   assert.equal(normalizeTracks([row('123', { pic: '//audio.example/cover.jpg' })], 'https://elsewhere.example/cover.jpg')[0].cover, '/img/sky-window.jpg');
 });
 
+test('official audio fallback uses only the normalized NetEase ID and a fixed HTTPS platform URL', () => {
+  for (const id of ['000123', '13512426282', '12345678901234567890']) {
+    const song = normalizeTracks([row(id)])[0];
+    const before = { ...song };
+    const href = officialAudioUrl(song);
+    assert.equal(href, 'https://music.163.com/song/media/outer/url?id=' + song.songId + '.mp3');
+    const url = new URL(href);
+    assert.equal(url.protocol, 'https:');
+    assert.equal(url.hostname, 'music.163.com');
+    assert.deepEqual([...url.searchParams], [['id', song.songId + '.mp3']]);
+    assert.equal(url.username, '');
+    assert.equal(url.password, '');
+    assert.deepEqual(song, before, 'generating a fallback must not change the track or its upstream URL');
+  }
+  assert.equal(harness().api.officialAudioUrl(normalizeTracks([row()])[0]), officialAudioUrl(normalizeTracks([row()])[0]));
+});
+
+test('official audio fallback rejects unsafe, mismatched and other-source song identifiers', () => {
+  const song = normalizeTracks([row()])[0];
+  for (const invalid of [
+    null, undefined, [], '123', {},
+    { ...song, id: 'qq:123' }, { ...song, id: 'netease:456' },
+    { ...song, id: 'netease:000123' },
+    ...['', '000123', ' 123 ', '1e3', '-1', '123&token=secret', '123#fragment', '123/456',
+      '123%26server=qq', '123\n', '1'.repeat(21), 123, -1, Number.MAX_SAFE_INTEGER + 1]
+      .map(songId => ({ ...song, songId, id: 'netease:' + songId }))
+  ]) assert.equal(officialAudioUrl(invalid), null);
+});
+
 test('requests encode queries and clear timeout/listeners on successful completion', async () => {
   const h = harness(async () => ({ ok: true, json: async () => [row()] }));
   const external = new AbortController();
@@ -94,6 +143,18 @@ test('requests encode queries and clear timeout/listeners on successful completi
   assert.equal(h.requests[0].options.credentials, 'omit');
   assert.equal(h.timers.size, 0);
   assert.equal(added, removed);
+});
+
+test('playlist requests resolve configured shared links before calling the music provider', async () => {
+  const h = harness(async () => ({ ok: true, json: async () => [row()] }));
+  const client = h.api.createClient({ playlistAliases: { 'https://163cn.tv/birPYWIu': '13512426282' } });
+  await client.request('playlist', '分享共享歌单: 記憶 https://163cn.tv/birPYWIu (@网易云音乐)');
+  const url = new URL(h.requests[0].url);
+  assert.equal(url.searchParams.get('type'), 'playlist');
+  assert.equal(url.searchParams.get('id'), '13512426282');
+  await assert.rejects(client.request('playlist', 'https://163cn.tv/unknown'), error => error.code === 'SHORT_LINK');
+  assert.equal(h.requests.length, 1, 'an unresolved short link must never reach the music provider as a playlist ID');
+  assert.equal(h.timers.size, 0);
 });
 
 test('network, HTTP and malformed responses fail clearly and leave no timeout behind', async () => {

@@ -4,12 +4,25 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { ROOT, locales } = require('./lib.cjs');
 const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.xml': 'application/xml; charset=utf-8', '.txt': 'text/plain; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.ico': 'image/x-icon', '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.woff2': 'font/woff2', '.woff': 'font/woff' };
-function createServer(directory = path.join(ROOT, 'public')) {
+function createServer(directory = path.join(ROOT, 'public'), options = {}) {
   if (!fs.existsSync(path.join(directory, 'i18n-routes.json'))) throw new Error('Run npm run build first.');
-  return http.createServer((req, res) => {
-    if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405); res.end(); return; }
+  const gateway = import('../music/gateway.mjs').then(({ createMusicGateway }) => createMusicGateway({
+    allowLocalhost: true, fetchImpl: options.musicFetchImpl
+  }));
+  return http.createServer(async (req, res) => {
     try {
       const url = new URL(req.url, 'http://localhost');
+      if (['/api/music/videos', '/api/music/video', '/api/music/audio', '/api/music/audio/track'].includes(url.pathname)) {
+        const headers = new Headers();
+        for (const name of ['origin', 'access-control-request-method', 'access-control-request-headers']) {
+          if (typeof req.headers[name] === 'string') headers.set(name, req.headers[name]);
+        }
+        const response = await (await gateway)(new Request(url.href, { method: req.method, headers }));
+        res.writeHead(response.status, Object.fromEntries(response.headers));
+        res.end(Buffer.from(await response.arrayBuffer()));
+        return;
+      }
+      if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405); res.end(); return; }
       const pathname = decodeURIComponent(url.pathname);
       let file = path.resolve(directory, '.' + pathname);
       const relative = path.relative(directory, file);

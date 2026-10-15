@@ -2,7 +2,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const cheerio = require('cheerio');
-const { createClient, parsePlaylistId } = require('../../source/js/music-source.js');
+const { createClient, createVideoClient, createOpenAudioClient, parsePlaylistId, parseSoundCloudUrl } = require('../../source/js/music-source.js');
+const { createClient: createAudiusClient } = require('../../source/js/music-audius.js');
 const { ROOT, locales, files, origin, canonical, translations, legacy } = require('./lib.cjs');
 function check(output = path.join(ROOT, 'public')) {
   const records = JSON.parse(fs.readFileSync(path.join(output, 'i18n-routes.json'), 'utf8'));
@@ -33,10 +34,27 @@ function check(output = path.join(ROOT, 'public')) {
         if (!Array.isArray(tracks) || new Set(tracks.map(t => t.id)).size !== tracks.length) throw new Error('invalid or duplicate track IDs');
         const music = JSON.parse($('#site-music-config').text());
         if ($('#site-music-config').length !== 1 || music.provider !== 'netease' || !music.playlistName) throw new Error('missing online music settings');
-        parsePlaylistId(music.playlistId); createClient(music); checkUrl(music.fallbackCover, rel);
+        parsePlaylistId(music.playlistId); createClient(music); createVideoClient(music); createOpenAudioClient(music); checkUrl(music.fallbackCover, rel);
+        if (music.catalogOnly) {
+          if (music.searchProvider !== 'audius') throw new Error('catalog search must use the configured third-party source');
+          createAudiusClient({ audiusApiKey: music.audiusApiKey, audiusAppName: music.audiusAppName });
+          if (['music-audius', 'music-catalog', 'music-layout', 'music-match'].some(name => $('script[src^="/js/' + name + '.js"]').length !== 1)) throw new Error('missing third-party music runtime');
+          if ($('[data-music-inline-player]').length !== 1 || $('#body-wrap [data-music-inline-player]').length) throw new Error('player must remain outside PJAX replacements');
+          if ($('[data-music-inline-player] [data-music-browser]').length !== 1 || $('#body-wrap [data-music-browser]').length) throw new Error('music browser must remain with the shared player');
+          if ($('button[data-music-return][aria-controls="site-music-panel"]').length !== 1 || $('[data-music-popup-close]').length !== 1) throw new Error('missing shared playlist popup controls');
+          if ($('[data-music-browser]').length && $('[data-music-provider="netease"]').length) throw new Error('catalog-only mode cannot show NetEase playback/search');
+        }
+        for (const [id, alternative] of Object.entries(music.audioAlternatives || {})) {
+          if (!/^netease:\d+$/.test(id) || !alternative.name || !alternative.artist) throw new Error('invalid alternate audio mapping');
+          if (!/^[1-9]\d+$/.test(alternative.trackId || '') || !Number.isSafeInteger(alternative.durationMs) || alternative.durationMs < 1000) throw new Error('alternate audio requires verified identity and duration');
+          parseSoundCloudUrl(alternative.url);
+        }
         for (const track of tracks) {
-          if (![track.id, track.name, track.artist, track.url, track.cover].every(v => typeof v === 'string' && v.length)) throw new Error('incomplete track metadata');
-          checkUrl(track.url, rel); checkUrl(track.cover, rel);
+          const required = music.catalogOnly ? [track.id, track.name, track.artist, track.cover] : [track.id, track.name, track.artist, track.url, track.cover];
+          if (!required.every(v => typeof v === 'string' && v.length)) throw new Error('incomplete track metadata');
+          if (music.catalogOnly && track.url !== undefined) throw new Error('imported catalog cannot contain audio addresses');
+          if (!music.catalogOnly) checkUrl(track.url, rel);
+          checkUrl(track.cover, rel);
         }
         for (const button of $('[data-track-id]').toArray()) if (!tracks.some(t => t.id === $(button).attr('data-track-id'))) throw new Error('unknown track button');
         if ($('[data-music-browser]').length && (!$('[data-music-search-form]').length || !$('[data-music-playlist-form]').length)) throw new Error('missing music browsing controls');

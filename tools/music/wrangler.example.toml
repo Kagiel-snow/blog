@@ -1,0 +1,9 @@
+# Copy to wrangler.toml and replace the origin before deploying your own Worker.
+# These endpoints return public audio/video metadata, never media streams or account data.
+name = "blog-music-video-search"
+main = "gateway.mjs"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[vars]
+ALLOWED_ORIGINS = "https://kagiel.top"

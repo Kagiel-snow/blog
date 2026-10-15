@@ -1,8 +1,24 @@
 {
   "provider": "netease",
+  "catalogOnly": true,
+  "allowPublicNeteaseFallback": true,
+  "searchProvider": "audius",
+  "audiusAppName": "KagielBlog",
+  "audiusApiKey": "",
   "endpoint": "https://api.i-meto.com/meting/api",
-  "playlistId": "3778678",
-  "playlistName": "网易云热歌榜",
+  "videoEndpoint": "",
+  "openAudioEndpoint": "",
+  "audioAlternatives": {
+    "netease:1309995372": { "url": "https://soundcloud.com/beabadoobee/coffee", "trackId": "342790792", "name": "Coffee", "artist": "beabadoobee", "durationMs": 126873 },
+    "netease:1379918404": { "url": "https://soundcloud.com/mjapanay/timemachine", "trackId": "643148646", "name": "time machine (ft. aren park)", "artist": "mj apanay", "durationMs": 225933 },
+    "netease:2630316924": { "url": "https://soundcloud.com/julianachahayed/inside-juliana-chahayed-and-jackson-lundy", "trackId": "1956517643", "name": "inside - Juliana Chahayed and Jackson Lundy", "artist": "Juliana Chahayed", "durationMs": 120624 },
+    "netease:492833245": { "url": "https://soundcloud.com/mr_hong/bittersweet-chocolate", "trackId": "320637708", "name": "bittersweet chocolate (now on spotify)", "artist": "mr. hong", "durationMs": 240120 }
+  },
+  "playlistId": "13512426282",
+  "playlistName": "記憶",
+  "playlistAliases": {
+    "https://163cn.tv/birPYWIu": "13512426282"
+  },
   "timeoutMs": 12000,
   "fallbackCover": "/img/sky-window.jpg",
   "pageSize": 20

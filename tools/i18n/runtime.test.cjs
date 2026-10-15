@@ -6,6 +6,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const locales = require('../../i18n/locales.json');
 const services = fs.readFileSync(path.join(__dirname, '../../source/js/services.js'), 'utf8');
+const appearance = fs.readFileSync(path.join(__dirname, '../../source/js/appearance.js'), 'utf8');
 
 test('player controls stay open when their clicked icon is replaced; outside clicks still close', () => {
   const listeners = {};
@@ -23,6 +24,150 @@ test('player controls stay open when their clicked icon is replaced; outside cli
   assert.equal(dock.open, true, 'replaced play/pause icons are still inside clicks');
   listeners.click({ target: detachedIcon, composedPath: () => [detachedIcon] });
   assert.equal(dock.open, false, 'actual outside clicks still dismiss the panel');
+});
+
+function popupHarness() {
+  const listeners = new Map(), dispatched = [], focusChanges = [], classes = new Set();
+  let layoutSyncs = 0, navigations = 0;
+  const doc = {};
+  function element() {
+    const attributes = new Map();
+    return {
+      isConnected: true,
+      getAttribute: name => attributes.get(name) ?? null,
+      setAttribute: (name, value) => attributes.set(name, value),
+      removeAttribute: name => attributes.delete(name),
+      closest: () => null,
+      focus(options) { doc.activeElement = this; focusChanges.push({ item: this, options }); }
+    };
+  }
+  function button(selector) {
+    const item = element();
+    item.closest = query => query === selector ? item : null;
+    return item;
+  }
+  const close = button('[data-music-popup-close]');
+  const trigger = button('[data-music-return]'); trigger.href = '/music/#music-player-slot';
+  trigger.setAttribute('aria-expanded', 'false');
+  let triggers = [trigger];
+  const iframe = Object.freeze({ src: 'https://w.soundcloud.com/player/?url=verified-song' });
+  const audio = Object.freeze({ currentTime: 84, paused: false,
+    play() { throw new Error('Opening or closing must not play the audio'); },
+    pause() { throw new Error('Opening or closing must not pause the audio'); },
+    load() { throw new Error('Opening or closing must not reload the audio'); }
+  });
+  const inline = button('[data-music-inline-player]');
+  inline.children = Object.freeze([iframe, audio]);
+  inline.querySelector = selector => selector === '[data-music-popup-close]' ? close : null;
+  for (const method of ['append', 'appendChild', 'remove', 'replaceChildren']) {
+    inline[method] = () => { throw new Error('Popup controls must never detach or replace the playing media'); };
+  }
+  const emit = event => { for (const listener of listeners.get(event.type) || []) listener(event); };
+  Object.assign(doc, {
+    activeElement: trigger,
+    body: { classList: { toggle(name, active) { if (active) classes.add(name); else classes.delete(name); } } },
+    querySelector: selector => selector === '[data-music-inline-player]' ? inline : selector === '[data-music-return]' ? triggers[0] : null,
+    querySelectorAll: selector => selector === '[data-music-return]' ? triggers : [],
+    addEventListener(name, listener) { if (!listeners.has(name)) listeners.set(name, []); listeners.get(name).push(listener); },
+    dispatchEvent(event) { dispatched.push(event.type); emit(event); }
+  });
+  const context = { document: doc, Event: class Event { constructor(type) { this.type = type; } },
+    SiteMusicLayout: { create: () => ({ sync() { layoutSyncs++; } }) }
+  };
+  context.window = context;
+  const run = () => vm.runInNewContext(appearance, context);
+  run();
+  function click(target, path = [target]) {
+    const event = { type: 'click', target, composedPath: () => path, defaultPrevented: false,
+      preventDefault() { this.defaultPrevented = true; } };
+    emit(event);
+    if (target.href && !event.defaultPrevented) navigations++;
+    return event;
+  }
+  function key(key) {
+    const event = { type: 'keydown', key, defaultPrevented: false, preventDefault() { this.defaultPrevented = true; } };
+    emit(event); return event;
+  }
+  return { context, doc, inline, trigger, close, iframe, audio, classes, listeners, dispatched, focusChanges,
+    button, click, key, emit, run, replaceTriggers(value) { triggers = value; },
+    get layoutSyncs() { return layoutSyncs; }, get navigations() { return navigations; }
+  };
+}
+
+test('the music shortcut toggles the popup and accessibility state without navigating', () => {
+  const h = popupHarness();
+  const first = h.click(h.trigger);
+  assert.equal(first.defaultPrevented, true); assert.equal(h.navigations, 0);
+  assert.equal(h.inline.getAttribute('data-music-popup-open'), 'true');
+  assert.equal(h.inline.getAttribute('role'), 'dialog');
+  assert.equal(h.trigger.getAttribute('aria-expanded'), 'true'); assert.equal(h.classes.has('music-open'), true);
+  assert.equal(h.doc.activeElement, h.close);
+  assert.deepEqual(h.dispatched, ['site:music-popup-open']);
+  h.click(h.trigger);
+  assert.equal(h.inline.getAttribute('data-music-popup-open'), 'false');
+  assert.equal(h.inline.getAttribute('role'), null);
+  assert.equal(h.trigger.getAttribute('aria-expanded'), 'false'); assert.equal(h.classes.has('music-open'), false);
+  assert.equal(h.doc.activeElement, h.trigger); assert.equal(h.navigations, 0);
+  assert.deepEqual(h.dispatched, ['site:music-popup-open'], 'closing does not repeat the open notification');
+  assert.equal(h.layoutSyncs, 2);
+});
+
+test('close and Escape restore the opener without replacing, stopping or reloading current media', () => {
+  const h = popupHarness(), originalChildren = h.inline.children;
+  h.click(h.trigger); h.click(h.close);
+  assert.equal(h.inline.getAttribute('data-music-popup-open'), 'false'); assert.equal(h.doc.activeElement, h.trigger);
+  h.click(h.trigger);
+  const escape = h.key('Escape');
+  assert.equal(escape.defaultPrevented, true); assert.equal(h.doc.activeElement, h.trigger);
+  assert.equal(h.trigger.getAttribute('aria-expanded'), 'false');
+  assert.equal(h.inline.children, originalChildren); assert.equal(h.inline.children[0], h.iframe);
+  assert.equal(h.iframe.src, 'https://w.soundcloud.com/player/?url=verified-song');
+  assert.equal(h.audio.currentTime, 84); assert.equal(h.audio.paused, false);
+  assert.equal(h.key('Escape').defaultPrevented, false, 'an already closed popup does not consume Escape');
+  assert.deepEqual(h.dispatched, ['site:music-popup-open', 'site:music-popup-open']);
+  assert.equal(h.focusChanges.every(change => change.options.preventScroll === true), true);
+});
+
+test('a replaced inside icon keeps the popup open, while outside dismissal preserves outside focus', () => {
+  const h = popupHarness(); h.click(h.trigger);
+  const detachedIcon = { closest: () => null };
+  h.click(detachedIcon, [detachedIcon, h.inline]);
+  assert.equal(h.inline.getAttribute('data-music-popup-open'), 'true');
+  const outside = h.button('[data-outside-control]'); outside.focus();
+  const focusCount = h.focusChanges.length;
+  h.click(outside);
+  assert.equal(h.inline.getAttribute('data-music-popup-open'), 'false');
+  assert.equal(h.trigger.getAttribute('aria-expanded'), 'false');
+  assert.equal(h.doc.activeElement, outside); assert.equal(h.focusChanges.length, focusCount);
+  assert.deepEqual(h.dispatched, ['site:music-popup-open']);
+});
+
+test('PJAX and repeated initialization reuse the popup and allow the current shortcut to reopen it', () => {
+  const h = popupHarness(), controller = h.context.siteMusicPopup;
+  h.click(h.trigger); h.click(h.close);
+  h.emit({ type: 'pjax:send' }); h.emit({ type: 'pjax:complete' }); h.run();
+  assert.equal(h.context.siteMusicPopup, controller);
+  assert.equal(h.listeners.get('click').length, 1); assert.equal(h.listeners.get('keydown').length, 1);
+  const nextTrigger = h.button('[data-music-return]'); nextTrigger.href = '/music/';
+  h.trigger.isConnected = false; h.replaceTriggers([nextTrigger]);
+  h.click(nextTrigger);
+  assert.equal(h.inline.getAttribute('data-music-popup-open'), 'true');
+  assert.equal(nextTrigger.getAttribute('aria-expanded'), 'true'); assert.equal(h.navigations, 0);
+  h.key('Escape'); assert.equal(h.doc.activeElement, nextTrigger);
+  assert.equal(h.inline.children[0], h.iframe); assert.equal(h.audio.currentTime, 84);
+  assert.deepEqual(h.dispatched, ['site:music-popup-open', 'site:music-popup-open']);
+});
+
+test('the public popup controls notify on opening and closing does not focus a disconnected shortcut', () => {
+  const h = popupHarness();
+  h.context.siteMusicPopup.open();
+  assert.equal(h.inline.getAttribute('data-music-popup-open'), 'true');
+  assert.equal(h.trigger.getAttribute('aria-expanded'), 'true');
+  h.trigger.isConnected = false;
+  const outside = h.button('[data-outside-control]'); outside.focus();
+  h.context.siteMusicPopup.close();
+  assert.equal(h.inline.getAttribute('data-music-popup-open'), 'false'); assert.equal(h.doc.activeElement, outside);
+  assert.deepEqual(h.dispatched, ['site:music-popup-open']);
 });
 
 const settle = () => new Promise(resolve => setImmediate(resolve));

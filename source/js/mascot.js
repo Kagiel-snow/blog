@@ -217,6 +217,12 @@
     // The player outside-click listener must not close the panel we just opened.
     event.stopPropagation();
     close(false);
+    const inlinePlayer = document.querySelector('[data-music-inline-player]');
+    if (inlinePlayer) {
+      if (window.siteMusicPopup) window.siteMusicPopup.open();
+      else document.querySelector('[data-music-return]')?.click();
+      return;
+    }
     const dock = document.querySelector('.music-dock');
     if (dock) { dock.open = true; dock.querySelector('summary').focus(); }
   });
