@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 630" role="img" aria-labelledby="title desc">
+  <title id="title">正整数总和为十与七颗自由分配的星</title>
+  <desc id="desc">三个变量各预留一单位后，十个单位剩余七个。七颗星与两块隔板排成九个位置，额外数量为二、三、二，加回预留量得到三、四、三。</desc>
+  <rect width="1000" height="630" rx="22" fill="#f3f6f9"/>
+  <g font-family="'Microsoft YaHei','PingFang SC',sans-serif" fill="#344252">
+    <text x="44" y="56" font-size="27" font-weight="600">a + b + c = 10，a、b、c ≥ 1</text>
+    <text x="44" y="98" font-size="20" fill="#65778a">先保留最低数量，再表示可以自由分配的剩余量</text>
+    <rect x="36" y="125" width="928" height="115" rx="14" fill="#fff"/>
+    <text x="60" y="161" font-size="20" font-weight="600">① 各预留 1 个，共用去 3 个</text>
+    <text x="60" y="209" font-size="24">a：1 + x</text>
+    <text x="354" y="209" font-size="24">b：1 + y</text>
+    <text x="648" y="209" font-size="24">c：1 + z</text>
+    <path d="M500 246v24m-8-8 8 8 8-8" fill="none" stroke="#8da6be" stroke-width="3"/>
+    <rect x="36" y="280" width="928" height="193" rx="14" fill="#fff"/>
+    <text x="60" y="317" font-size="20" font-weight="600">② x + y + z = 7：7 颗星 + 2 块隔板 = 9 个位置</text>
+    <g font-size="17" fill="#65778a" text-anchor="middle">
+      <text x="105" y="355">1</text><text x="200" y="355">2</text><text x="295" y="355">3</text>
+      <text x="390" y="355">4</text><text x="485" y="355">5</text><text x="580" y="355">6</text>
+      <text x="675" y="355">7</text><text x="770" y="355">8</text><text x="865" y="355">9</text>
+    </g>
+    <g font-family="'Segoe UI Symbol',sans-serif" font-size="43" text-anchor="middle">
+      <g fill="#426f98"><text x="105" y="405">★</text><text x="200" y="405">★</text></g>
+      <g fill="#65778a"><text x="390" y="405">★</text><text x="485" y="405">★</text><text x="580" y="405">★</text></g>
+      <g fill="#8ba7c1"><text x="770" y="405">★</text><text x="865" y="405">★</text></g>
+    </g>
+    <g stroke="#344252" stroke-width="5" stroke-linecap="round"><path d="M295 372v39"/><path d="M675 372v39"/></g>
+    <g font-size="20" text-anchor="middle"><text x="152" y="448">x = 2</text><text x="485" y="448">y = 3</text><text x="817" y="448">z = 2</text></g>
+    <path d="M500 479v24m-8-8 8 8 8-8" fill="none" stroke="#8da6be" stroke-width="3"/>
+    <rect x="36" y="513" width="928" height="83" rx="14" fill="#e6eef6"/>
+    <text x="60" y="546" font-size="20">③ 每组加回预留的 1 个</text>
+    <text x="60" y="579" font-size="22" font-weight="600">(a,b,c) = (3,4,3)，3 + 4 + 3 = 10</text>
+  </g>
+</svg>
