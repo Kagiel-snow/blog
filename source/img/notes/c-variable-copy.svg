@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" role="img" aria-labelledby="title desc">
+  <title id="title">变量复制与后续赋值</title>
+  <desc id="desc">初始状态 a 为三，b 复制 a 的值得到三；执行 a 等于八后，a 为八而 b 仍为三。复制值没有建立自动同步关系。</desc>
+  <rect width="1000" height="460" rx="20" fill="#f3f6f9"/>
+  <g font-family="'Microsoft YaHei','PingFang SC',sans-serif" fill="#344252">
+    <text x="40" y="55" font-size="26" font-weight="600">复制当前值后，两个变量分别保存各自的值</text>
+    <rect x="35" y="85" width="445" height="275" rx="16" fill="#fff"/>
+    <rect x="520" y="85" width="445" height="275" rx="16" fill="#fff"/>
+    <text x="60" y="128" font-size="21">① int a = 3; int b = a;</text>
+    <text x="545" y="128" font-size="21">② 执行 a = 8;</text>
+    <g fill="#e6eef6" stroke="#b6cadd" stroke-width="2"><rect x="83" y="165" width="145" height="135" rx="12"/><rect x="278" y="165" width="145" height="135" rx="12"/><rect x="568" y="165" width="145" height="135" rx="12"/><rect x="763" y="165" width="145" height="135" rx="12"/></g>
+    <g text-anchor="middle" font-size="22"><text x="155" y="199">a</text><text x="350" y="199">b</text><text x="640" y="199">a</text><text x="835" y="199">b</text></g>
+    <g text-anchor="middle" font-size="48" fill="#426f98" font-weight="600"><text x="155" y="266">3</text><text x="350" y="266">3</text><text x="640" y="266">8</text><text x="835" y="266">3</text></g>
+    <text x="60" y="339" font-size="19" fill="#65778a">b 得到执行初始化时 a 的值</text>
+    <text x="545" y="339" font-size="19" fill="#65778a">这次赋值只修改 a，b 仍然是 3</text>
+    <text x="40" y="412" font-size="21">若要让 b 取得新的 a，需要再次执行 b = a;</text>
+  </g>
+</svg>
