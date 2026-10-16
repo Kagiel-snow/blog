@@ -26,7 +26,9 @@ const { lifeSince, formatLife } = require('../../source/js/sections.js');
 // Broad English subject for each study tag; the newest study note decides what I'm learning now.
 const SUBJECTS = { 'C语言': ['Programming', 'C'], '计算机基础': ['Computer science', 'the basics'], '软件工程': ['Software engineering', ''],
   '计算机网络': ['Networking', ''], '网络安全': ['Cybersecurity', ''], '离散数学': ['Mathematics', 'discrete math'],
-  '概率论': ['Mathematics', 'probability'], '统计学': ['Mathematics', 'statistics'], '日语': ['Japanese', ''] };
+  '概率论': ['Mathematics', 'probability'], '统计学': ['Mathematics', 'statistics'], '日语': ['Japanese', ''],
+  'AI': ['AI', 'system design'], '系统设计': ['System design', ''], '经营战略': ['Business strategy', ''],
+  'IT护照': ['IT Passport', ''], '写作': ['Academic writing', 'reports'] };
 function currentSubject() {
   const latest = inspectContent().filter(item => item.post && [].concat(item.doc.categories || [])[0] === '边学边记')
     .sort((a, b) => new Date(b.doc.date) - new Date(a.doc.date))[0];

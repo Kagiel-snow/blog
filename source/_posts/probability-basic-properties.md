@@ -1,7 +1,7 @@
 ---
 title: 从概率空间理解概率的基本性质
 date: '2026-10-07T09:02:00+09:00'
-updated: '2026-10-07T09:02:00+09:00'
+updated: '2026-10-16T09:30:00+09:00'
 lang: zh-CN
 translation_key: probability-basic-properties
 permalink: posts/probability-basic-properties/
@@ -205,6 +205,52 @@ P(至少一个白球)
 ```
 
 这里不能把“零白、一白、二白、三白”当成四种等可能结果，因为每一种颜色构成所对应的三球集合数量不同。若改成每次抽出后放回，样本空间和概率规则都会变化，不能继续沿用这个分母。
+
+## 三个事件的加法公式与概率上界
+
+两个事件的加法公式可以推广到三个事件，推理与[集合元素个数的容斥原理](/posts/set-operations-element-count/)完全相同，只是把个数换成概率：
+
+```text
+P(A ∪ B ∪ C) = P(A) + P(B) + P(C)
+             − P(A ∩ B) − P(B ∩ C) − P(C ∩ A)
+             + P(A ∩ B ∩ C)
+```
+
+掷一颗公平骰子，令 A 为“偶数”、B 为“3 的倍数”、C 为“4 以上”。
+
+```text
+A = {2,4,6}, B = {3,6}, C = {4,5,6}
+P(A) = 3/6, P(B) = 2/6, P(C) = 3/6
+A ∩ B = {6}, B ∩ C = {6}, C ∩ A = {4,6}, A ∩ B ∩ C = {6}
+
+P(A ∪ B ∪ C) = (3 + 2 + 3 − 1 − 1 − 2 + 1)/6 = 5/6
+```
+
+直接列出 `A ∪ B ∪ C = {2,3,4,5,6}`，同样是 5/6，只有点数 1 不在其中。
+
+如果只需要一个上界，可以省掉所有交集项，得到布尔不等式（<span lang="ja" translate="no">ブールの不等式</span> / Boole's inequality）：
+
+```text
+P(A ∪ B ∪ C) ≤ P(A) + P(B) + P(C)
+```
+
+上例中右边是 8/6，超过 1，说明这个上界此时没有提供信息。它在事件概率都很小时更有用，例如估计“多台设备中至少一台出故障”的概率不超过各台故障概率之和。
+
+## 用日语读出基本性质
+
+日本教材通常把下面几条称为「<span lang="ja" translate="no">確率の基本性質</span>」。题目里的说法和中文对应如下：
+
+| 日语 | 中文 | 式子 |
+| --- | --- | --- |
+| <span lang="ja" translate="no">どんな事象 A についても</span> | 对任意事件 A | `0 ≤ P(A) ≤ 1` |
+| <span lang="ja" translate="no">全事象・空事象</span> | 全事件、空事件 | `P(U) = 1`，`P(∅) = 0` |
+| <span lang="ja" translate="no">余事象の確率</span> | 补事件的概率 | `P(Ā) = 1 − P(A)` |
+| <span lang="ja" translate="no">和事象・積事象</span> | 和事件（并）、积事件（交） | `A ∪ B`、`A ∩ B` |
+| <span lang="ja" translate="no">排反である</span> | 互斥 | `A ∩ B = ∅` 时 `P(A ∪ B) = P(A) + P(B)` |
+| <span lang="ja" translate="no">加法定理</span> | 加法公式 | `P(A ∪ B) = P(A) + P(B) − P(A ∩ B)` |
+| <span lang="ja" translate="no">少なくとも 1 回</span> | 至少一次 | 常用 `1 − P(一次也没有)` |
+
+「<span lang="ja" translate="no">排反</span>」容易和「<span lang="ja" translate="no">独立</span>」混淆，下一节专门区分。
 
 ## 互斥和独立要用不同关系判断
 
