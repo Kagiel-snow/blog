@@ -28,6 +28,7 @@ menu:
     图片: /Gallery/ || fas fa-images
     动画: /movies/ || fas fa-video
     友链: /link/ || fas fa-link
+  小游戏: /games/ || fas fa-gamepad
   关于: /about/ || fas fa-heart
 
   # Home: / || fas fa-home
@@ -41,7 +42,7 @@ menu:
 
 code_blocks:
   # Code block theme: darker / pale night / light / ocean / false
-  theme: light
+  theme: ocean
   macStyle: false
   # Code block height limit (unit: px)
   height_limit: false
@@ -784,18 +785,18 @@ site_verification:
 
 theme_color:
   enable: true
-  main: "#3f6f99"
-  paginator: "#3f6f99"
-  button_hover: "#6f9cc4"
-  text_selection: "#dde8f2"
-  link_color: "#3f6f99"
-  meta_color: "#65778a"
-  hr_color: "#dfe6ee"
-  toc_color: "#3f6f99"
-  blockquote_padding_color: "#3f6f99"
-  scrollbar_color: "#8fb0cf"
-  meta_theme_color_light: "#f3f6f9"
-  meta_theme_color_dark: "#17202b"
+  main: "#25609a"
+  paginator: "#25609a"
+  button_hover: "#1592c4"
+  text_selection: "#cfe6f4"
+  link_color: "#25609a"
+  meta_color: "#5a6b81"
+  hr_color: "#cfd9e6"
+  toc_color: "#1592c4"
+  blockquote_padding_color: "#1592c4"
+  scrollbar_color: "#5a8fbf"
+  meta_theme_color_light: "#e8edf4"
+  meta_theme_color_dark: "#070d19"
 
 # Other supported color options:
 #   enable: true
@@ -1104,8 +1105,10 @@ inject:
     - <link rel="stylesheet" href="/css/sections.css?v=20261015-6">
     - <link rel="stylesheet" href="/css/anime-minimal.css?v=20261015-2">
     - <link rel="stylesheet" href="/css/music.css?v=20261015-5">
-    - <link rel="stylesheet" href="/css/mascot.css?v=20261009-1">
+    - <link rel="stylesheet" href="/css/mascot.css?v=20261016-1">
     - <link rel="stylesheet" href="/css/kawaii.css?v=20261015-2">
+    - <link rel="stylesheet" href="/css/games.css?v=20261016-1">
+    - <link rel="stylesheet" href="/css/cyber.css?v=20261017-1">
   bottom:
     - <div id="kagiel-player"></div>
     - <script src="/vendor/aplayer-1.10.1/APlayer.min.js" defer></script>
@@ -1113,7 +1116,7 @@ inject:
     - <script src="/js/services.js" defer></script>
     - <script src="/js/appearance.js?v=20261015-3" defer></script>
     - <script src="/js/mascot-dialogue.js?v=20261007-1" defer></script>
-    - <script src="/js/mascot.js?v=20261015-3" defer></script>
+    - <script src="/js/mascot.js?v=20261016-1" defer></script>
     - <script src="/js/music-source.js?v=20261015-3" defer></script>
     - <script src="/js/music-audius.js?v=20261013-4" defer></script>
     - <script src="/js/music-match.js?v=20261015-1" defer></script>
@@ -1121,7 +1124,8 @@ inject:
     - <script src="/js/music-catalog.js?v=20261015-3" defer></script>
     - <script src="/js/music.js?v=20261015-5" defer></script>
     - <script src="/js/sections.js?v=20261015-3" defer></script>
-    - <script src="/js/kawaii.js?v=20261015-2" defer></script>
+    - <script src="/js/kawaii.js?v=20261017-1" defer></script>
+    - <script src="/js/games.js?v=20261016-1" defer></script>
 # CDN Settings
 # Don't modify the following settings unless you know how they work
 CDN:

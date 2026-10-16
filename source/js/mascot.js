@@ -31,7 +31,8 @@
   function layout() {
     const content = document.getElementById('content-inner');
     const margin = content ? content.getBoundingClientRect().left : (innerWidth - 1180) / 2;
-    const mode = margin >= 185 && innerWidth >= 1500 ? 'full' : margin >= 90 && innerWidth >= 1200 ? 'compact' : 'small';
+    // Short laptop screens cannot fit the full figure above the tool buttons.
+    const mode = margin >= 185 && innerWidth >= 1500 && innerHeight >= 700 ? 'full' : margin >= 90 && innerWidth >= 1200 ? 'compact' : 'small';
     root.dataset.layout = mode;
     root.style.setProperty('--mascot-rail-size', Math.min(290, Math.max(160, margin - 24)) + 'px');
     syncControl();
@@ -39,11 +40,9 @@
   }
   function syncControl() {
     toggle.hidden = false;
-    const small = root.dataset.layout === 'small';
-    const visible = !hidden && (!small || !dialog.hidden);
-    toggle.setAttribute('aria-pressed', String(visible));
+    toggle.setAttribute('aria-pressed', String(!hidden));
     toggle.setAttribute('aria-controls', 'site-mascot');
-    const label = small ? visible ? '收起看板娘' : '打开看板娘' : hidden ? '显示看板娘' : '隐藏看板娘';
+    const label = hidden ? '显示看板娘' : '隐藏看板娘';
     toggle.querySelector('span').textContent = label;
     toggle.setAttribute('aria-label', label);
     toggle.title = label;
@@ -59,19 +58,18 @@
     update();
     try { localStorage.setItem(key, String(value)); } catch { /* Keep the in-memory preference. */ }
   }
-  function open(focusInput = false) {
+  function open() {
     if (hidden) setHidden(false);
     dialog.hidden = false;
     avatar.setAttribute('aria-expanded', 'true');
     syncControl();
-    if (focusInput) input.focus();
   }
   function close(restoreFocus = true) {
     if (dialog.hidden) return;
     dialog.hidden = true;
     avatar.setAttribute('aria-expanded', 'false');
     syncControl();
-    if (restoreFocus) (root.dataset.layout === 'small' ? toggle : avatar).focus();
+    if (restoreFocus) avatar.focus();
   }
   function react() {
     root.classList.remove('is-happy');
@@ -171,12 +169,7 @@
     }
   }
 
-  toggle.addEventListener('click', () => {
-    if (root.dataset.layout === 'small') {
-      if (!dialog.hidden && !hidden) close();
-      else { setHidden(false); open(true); }
-    } else setHidden(!hidden);
-  });
+  toggle.addEventListener('click', () => setHidden(!hidden));
   avatar.addEventListener('click', () => { react(); open(); });
   root.querySelector('.mascot-close').addEventListener('click', () => close());
   root.querySelector('[data-mascot-hide]').addEventListener('click', () => { setHidden(true); toggle.focus(); });
@@ -288,7 +281,7 @@
   }
   function queuePaint() { if (!frame) frame = requestAnimationFrame(paint); }
   document.addEventListener('pointermove', event => {
-    if (event.pointerType === 'touch' || reducedMotion.matches || hidden || root.dataset.layout === 'small' || document.hidden || document.body.classList.contains('music-open')) return;
+    if (event.pointerType === 'touch' || reducedMotion.matches || hidden || document.hidden || document.body.classList.contains('music-open')) return;
     const bounds = avatar.getBoundingClientRect();
     const eyeY = root.dataset.layout === 'full' ? bounds.top + bounds.height * .123 : bounds.top + bounds.height * .4;
     targetX = clamp((event.clientX - (bounds.left + bounds.width * .5)) / 320);

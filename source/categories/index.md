@@ -6,4 +6,4 @@ aside: false
 top_img: false
 ---
 
-找文章的时候方便一点。
+按分类浏览，找起来更方便。

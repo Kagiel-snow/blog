@@ -6,4 +6,4 @@ aside: false
 top_img: false
 ---
 
-后面有合适的友链再加。
+暂时还没有友链，之后会陆续添加。

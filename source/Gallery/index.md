@@ -5,4 +5,4 @@ aside: false
 top_img: false
 ---
 
-喜欢的话可以点开看原图。
+点开图片可以查看原图。

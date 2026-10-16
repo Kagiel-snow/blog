@@ -1,6 +1,6 @@
 'use strict';
-// Kawaii layer: slow light snowfall, click sparks, a sleeping footer cat and a cute tab title.
-// Everything is decorative: no network, no stored data except the snow on/off choice.
+// Kawaii layer: fine rain, a click ripple, a sleeping footer cat and a tab title.
+// Everything is decorative: no network, no stored data except the rain on/off choice.
 (() => {
   if (window.siteKawaii) return;
   window.siteKawaii = true;
@@ -11,20 +11,21 @@
   };
   const dark = () => document.documentElement.getAttribute('data-theme') === 'dark';
 
-  // ---- Snowfall: a few flakes on one canvas, paused when the tab is hidden.
+  // ---- Fine rain: thin slanted streaks on one canvas, paused when the tab is hidden.
+  // Names keep "snow" so the stored on/off choice ('kawaii-snow') still applies.
   const canvas = document.createElement('canvas');
   canvas.className = 'kw-snow';
   canvas.setAttribute('aria-hidden', 'true');
   const ctx = canvas.getContext('2d');
-  let flakes = [], frame = 0, width = 0, height = 0, ratio = 1;
+  let drops = [], frame = 0, width = 0, height = 0, ratio = 1;
   let snowOn = !reduced && store.get('kawaii-snow') !== 'off';
+  const WIND = 0.18;
 
-  function flake(top) {
-    const big = Math.random() < 0.22;
-    return { x: Math.random() * width, y: top ? Math.random() * height : -12,
-      r: big ? 4 + Math.random() * 3 : 1.2 + Math.random() * 2, star: big,
-      vy: 0.12 + Math.random() * 0.28, sway: Math.random() * Math.PI * 2, spin: Math.random() * Math.PI,
-      tint: Math.random() < 0.55 ? 'white' : 'ice' };
+  function drop(top) {
+    const near = Math.random() < 0.18;
+    return { x: Math.random() * (width + height * WIND), y: top ? Math.random() * height : -30 - Math.random() * 60,
+      len: near ? 18 + Math.random() * 10 : 8 + Math.random() * 10, vy: near ? 7 + Math.random() * 3 : 4 + Math.random() * 3,
+      alpha: near ? 0.32 : 0.12 + Math.random() * 0.14, width: near ? 1.2 : 0.8 };
   }
   function resize() {
     ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -32,31 +33,19 @@
     canvas.width = width * ratio; canvas.height = height * ratio;
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     const reading = !!document.getElementById('article-container');
-    const count = Math.round((width < 768 ? 16 : 34) * (reading ? 0.6 : 1));
-    while (flakes.length < count) flakes.push(flake(true));
-    flakes.length = count;
+    const count = Math.round((width < 768 ? 36 : 80) * (reading ? 0.5 : 1));
+    while (drops.length < count) drops.push(drop(true));
+    drops.length = count;
   }
   function draw() {
     ctx.clearRect(0, 0, width, height);
-    // Mostly white with pale blue; on the light page white flakes get a faint blue edge to stay visible.
-    const ice = dark() ? 'rgba(190,220,245,.8)' : 'rgba(150,190,225,.8)';
-    const white = dark() ? 'rgba(245,250,255,.9)' : 'rgba(255,255,255,.95)';
-    ctx.shadowColor = dark() ? 'transparent' : 'rgba(110,150,190,.55)'; ctx.shadowBlur = dark() ? 0 : 3;
-    for (const f of flakes) {
-      f.y += f.vy; f.sway += 0.006; f.spin += 0.003;
-      f.x += Math.sin(f.sway) * 0.22;
-      if (f.y > height + 12) Object.assign(f, flake(false));
-      ctx.strokeStyle = ctx.fillStyle = f.tint === 'white' ? white : ice;
-      if (!f.star) { ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill(); continue; }
-      ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.spin); ctx.lineWidth = 1.2; ctx.lineCap = 'round';
-      for (let arm = 0; arm < 6; arm++) {
-        ctx.rotate(Math.PI / 3); ctx.beginPath();
-        ctx.moveTo(0, 0); ctx.lineTo(0, -f.r * 1.6);
-        ctx.moveTo(0, -f.r * 0.9); ctx.lineTo(f.r * 0.45, -f.r * 1.25);
-        ctx.moveTo(0, -f.r * 0.9); ctx.lineTo(-f.r * 0.45, -f.r * 1.25);
-        ctx.stroke();
-      }
-      ctx.restore();
+    const tint = dark() ? '150,215,255' : '45,105,170';
+    ctx.lineCap = 'round';
+    for (const d of drops) {
+      d.y += d.vy; d.x -= d.vy * WIND;
+      if (d.y - d.len > height || d.x < -20) Object.assign(d, drop(false));
+      ctx.strokeStyle = `rgba(${tint},${d.alpha})`; ctx.lineWidth = d.width;
+      ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x + d.len * WIND, d.y - d.len); ctx.stroke();
     }
     frame = requestAnimationFrame(draw);
   }
@@ -69,7 +58,7 @@
   window.addEventListener('resize', () => { if (frame) resize(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) stopSnow(); else startSnow(); });
 
-  // A snowflake button among the right-side tools turns the snow on and off.
+  // An umbrella button among the right-side tools turns the rain on and off.
   function mountToggle() {
     const group = document.getElementById('rightside-config-hide');
     if (!group || document.getElementById('kw-snow-toggle')) return;
@@ -77,10 +66,11 @@
     button.id = 'kw-snow-toggle'; button.type = 'button';
     const sync = () => {
       button.classList.toggle('is-off', !snowOn);
-      button.title = snowOn ? '关掉雪花' : '让雪落下来';
+      button.title = snowOn ? '让雨停下' : '让雨落下来';
+      button.setAttribute('aria-label', button.title);
       button.setAttribute('aria-pressed', String(snowOn));
     };
-    button.textContent = '❄'; sync();
+    button.innerHTML = '<i class="fas fa-cloud-rain" aria-hidden="true"></i>'; sync();
     button.addEventListener('click', () => {
       snowOn = !snowOn; store.set('kawaii-snow', snowOn ? 'on' : 'off'); sync();
       if (snowOn) startSnow(); else stopSnow();
@@ -88,29 +78,23 @@
     group.prepend(button);
   }
 
-  // ---- Click sparks: a small burst of snowflakes, notes and hearts.
-  const sparks = ['❄', '✦', '♪', '♡', '❄', '✧'];
+  // ---- Click ripple: one thin neon ring where the pointer lands.
   document.addEventListener('pointerdown', event => {
     if (reduced || event.button !== 0) return;
-    if (event.target.closest('input,textarea,select,[contenteditable],.mascot-dialog,.aplayer')) return;
-    for (let index = 0; index < 6; index++) {
-      const spark = document.createElement('span');
-      spark.className = 'kw-spark'; spark.setAttribute('aria-hidden', 'true');
-      spark.textContent = sparks[(Math.random() * sparks.length) | 0];
-      spark.style.left = event.clientX - 7 + 'px'; spark.style.top = event.clientY - 7 + 'px';
-      spark.style.color = index % 2 === 0 ? 'var(--kw-blue)' : 'var(--kw-mist)';
-      document.body.append(spark);
-      const angle = (Math.PI * 2 * index) / 6 + Math.random() * 0.6, distance = 26 + Math.random() * 26;
-      const animation = spark.animate([
-        { transform: 'translate(0,0) scale(.4) rotate(0deg)', opacity: 1 },
-        { transform: `translate(${Math.cos(angle) * distance}px,${Math.sin(angle) * distance - 10}px) scale(1) rotate(${Math.random() * 120 - 60}deg)`, opacity: 0 }
-      ], { duration: 650 + Math.random() * 250, easing: 'cubic-bezier(.2,.8,.4,1)' });
-      animation.onfinish = () => spark.remove();
-    }
+    if (event.target.closest('input,textarea,select,[contenteditable],.mascot-dialog,.aplayer,.site-games')) return;
+    const ring = document.createElement('span');
+    ring.className = 'kw-ripple'; ring.setAttribute('aria-hidden', 'true');
+    ring.style.left = event.clientX + 'px'; ring.style.top = event.clientY + 'px';
+    document.body.append(ring);
+    const animation = ring.animate([
+      { transform: 'scale(.2)', opacity: .9 },
+      { transform: 'scale(1.4)', opacity: 0 }
+    ], { duration: 520, easing: 'cubic-bezier(.2,.8,.4,1)' });
+    animation.onfinish = () => ring.remove();
   }, { passive: true });
 
   // ---- Footer cat: sleeps until clicked, then says one line and dozes off again.
-  const lines = ['喵～', '今天也要好好学习喵', '雪好漂亮呀 ❄', '摸摸头可以哦', '再看一篇再睡喵', '♪ 要一起听歌吗', '(=^･ω･^=)'];
+  const lines = ['喵～', '今天也要好好学习喵', '外面好像在下雨', '摸摸头可以哦', '再看一篇再睡喵', '♪ 要一起听歌吗', '(=^･ω･^=)'];
   const catSvg = `<svg viewBox="0 0 86 52" aria-hidden="true">
     <path class="kw-cat-tail" d="M68 44 C82 44 84 30 76 26" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" style="color:#d5e2ee"/>
     <g class="kw-cat-body">
@@ -147,7 +131,7 @@
   let savedTitle = document.title, backTimer;
   document.addEventListener('visibilitychange', () => {
     clearTimeout(backTimer);
-    if (document.hidden) { savedTitle = document.title; document.title = '(｡•́︿•̀｡) 雪还在下哦～'; }
+    if (document.hidden) { savedTitle = document.title; document.title = '(｡•́︿•̀｡) 我还在等你哟～'; }
     else { document.title = '(≧▽≦) 欢迎回来！'; backTimer = setTimeout(() => { document.title = savedTitle; }, 1600); }
   });
 
