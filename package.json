@@ -14,8 +14,7 @@
     "test": "node --test tools/i18n/test.cjs tools/i18n/runtime.test.cjs tools/i18n/translation.test.cjs tools/i18n/search.test.cjs tools/traffic/cloudflare.test.cjs tools/mascot/mascot.test.cjs tools/music/source.test.cjs tools/music/runtime.test.cjs tools/music/gateway.test.cjs tools/music/video-source.test.cjs tools/music/open-audio.test.cjs tools/music/open-audio-source.test.cjs tools/music/catalog.test.cjs tools/music/catalog-source.test.cjs tools/music/audius-source.test.cjs tools/music/catalog-runtime.test.cjs tools/music/match.test.cjs tools/music/layout.test.cjs tools/covers/covers.test.cjs",
     "cover:pick": "node tools/covers/covers.cjs pick",
     "cover:fill": "node tools/covers/covers.cjs fill",
-    "cover:list": "node tools/covers/covers.cjs list",
-    "game:sync": "node tools/projects/sync-legion.cjs"
+    "cover:list": "node tools/covers/covers.cjs list"
   },
   "hexo": {
     "version": "8.1.2"

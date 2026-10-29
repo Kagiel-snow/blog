@@ -3,7 +3,6 @@ process.env.TZ = 'Asia/Tokyo';
 const fs = require('node:fs');
 const path = require('node:path');
 const Hexo = require('hexo');
-const micromatch = require(require.resolve('micromatch', { paths: [require.resolve('hexo')] }));
 const { ROOT, locales, loadTaxonomy, config, origin, write, documentKey, taxonomyKey, routeUrl } = require('./lib.cjs');
 const [lang, buildDir, contentRoot] = process.argv.slice(2);
 const taxonomy = loadTaxonomy(contentRoot);
@@ -83,9 +82,7 @@ async function run() {
     });
   }
   const known = new Set(records.map(r => r.route));
-  // skip_render files (standalone games) are copied as-is and are not site pages.
-  const raw = [].concat(cfg.skip_render || []);
-  for (const route of hexo.route.list().filter(p => p.endsWith('.html') && !known.has(p) && !micromatch.isMatch(p, raw))) {
+  for (const route of hexo.route.list().filter(p => p.endsWith('.html') && !known.has(p))) {
     let key, kind;
     if (route === 'index.html') { key = 'home'; kind = 'home'; }
     else if (route.startsWith('archives/')) { key = `archive:${route}`; kind = 'archive'; }
