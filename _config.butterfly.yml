@@ -29,6 +29,7 @@ menu:
     动画: /movies/ || fas fa-video
     友链: /link/ || fas fa-link
   小游戏: /games/ || fas fa-gamepad
+  工程: /projects/ || fas fa-flask
   关于: /about/ || fas fa-heart
 
   # Home: / || fas fa-home
@@ -1107,7 +1108,8 @@ inject:
     - <link rel="stylesheet" href="/css/music.css?v=20261015-5">
     - <link rel="stylesheet" href="/css/mascot.css?v=20261016-1">
     - <link rel="stylesheet" href="/css/kawaii.css?v=20261015-2">
-    - <link rel="stylesheet" href="/css/games.css?v=20261029-1">
+    - <link rel="stylesheet" href="/css/games.css?v=20261016-1">
+    - <link rel="stylesheet" href="/css/projects.css?v=20261029-1">
     - <link rel="stylesheet" href="/css/cyber.css?v=20261017-1">
   bottom:
     - <div id="kagiel-player"></div>

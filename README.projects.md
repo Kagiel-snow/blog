@@ -1,13 +1,11 @@
-# 小游戏
+# 工程
 
-`/games/` 页面有两部分：
+菜单里的「工程」是 `/projects/`，放自己在做的东西。页面正文在 `source/projects/index.md`，卡片样式在 `source/css/projects.css`。新增一个工程就在 `site-projects` 里照样加一张 `project-card`。
 
-- 页内小游戏 2048、扫雷、贪吃蛇：`source/js/games.js` 与 `source/css/games.css`。
-- 独立网页游戏「军团之王：要塞」：`source/games/legion/`，地址 `/games/legion/`，从小游戏页的卡片进入。
+## 军团之王：要塞
 
-## 更新「军团之王：要塞」
-
-游戏在单独的文件夹里开发。改完后在博客根目录运行：
+- 地址 `/projects/legion/`，文件在 `source/projects/legion/`，封面 `source/projects/legion-cover.jpg`。
+- 游戏在单独的文件夹里开发。改完后在博客根目录运行：
 
 ```sh
 npm run game:sync -- C:\Users\cxin1\projects\games\rouge

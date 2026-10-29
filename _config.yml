@@ -29,7 +29,7 @@ category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
 skip_render:
-  - games/legion/** # standalone browser game, copied as-is
+  - projects/legion/** # standalone browser game, copied as-is
 
 # Writing
 new_post_name: :title.md # File name of new posts

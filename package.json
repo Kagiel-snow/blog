@@ -15,7 +15,7 @@
     "cover:pick": "node tools/covers/covers.cjs pick",
     "cover:fill": "node tools/covers/covers.cjs fill",
     "cover:list": "node tools/covers/covers.cjs list",
-    "game:sync": "node tools/games/sync-legion.cjs"
+    "game:sync": "node tools/projects/sync-legion.cjs"
   },
   "hexo": {
     "version": "8.1.2"

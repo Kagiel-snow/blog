@@ -1,10 +1,5 @@
 /* Local mini games on /games/. Colors come from the site's blue-grey tokens, so dark mode follows automatically. */
 .site-games { max-width: 460px; margin: 18px auto 8px; color: var(--snow-text); }
-.game-feature { display: block; margin-bottom: 18px; padding: 14px 16px; border: 1px solid var(--snow-border); border-radius: 14px; background: var(--snow-card); color: var(--snow-text) !important; text-decoration: none !important; box-shadow: var(--snow-shadow); }
-.game-feature:hover { border-color: var(--snow-blue); }
-.game-feature strong { display: block; color: var(--snow-blue); font-size: 17px; }
-.game-feature span { display: block; margin-top: 4px; color: var(--snow-muted); font-size: 13px; line-height: 1.6; }
-.game-feature em { display: block; margin-top: 8px; color: var(--snow-blue); font-size: 13px; font-style: normal; }
 .game-tabs { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; padding: 5px; border: 1px solid var(--snow-border); border-radius: 14px; background: var(--snow-soft); }
 .game-tabs button { min-height: 44px; border: 0; border-radius: 10px; background: transparent; color: var(--snow-muted); font: inherit; font-size: 15px; cursor: pointer; }
 .game-tabs button[aria-selected='true'] { background: var(--snow-card); color: var(--snow-blue); font-weight: 600; box-shadow: var(--snow-shadow); }
