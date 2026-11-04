@@ -19,3 +19,5 @@ comments: false
   </div>
 </a>
 </div>
+
+<p class="project-credit">「军团之王：要塞」的界面图标由 <a href="https://game-icons.net" target="_blank" rel="noopener">game-icons.net</a> 的图标上色、描边后生成，作者 Lorc、Delapouite 等，许可 <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a>。</p>

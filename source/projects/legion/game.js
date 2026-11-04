@@ -77,6 +77,7 @@ function artKeys() {
   for (const id in FACTIONS) for (const b of ['hq', 'barracks', 'tower']) k.push(`ebld/${id}_${b}`);
   for (const id in LAIRS) k.push('lairs/' + id);
   for (const id in RELICS) k.push('relics/' + id);
+  if (typeof UI_ICONS !== 'undefined') for (const n in UI_ICONS) if (!/^[buh]_/.test(n)) k.push('ui/' + n);
   for (const id in BUILDINGS) if (id !== 'wall' && id !== 'trap') k.push('buildings/' + id);
   for (const m of MAPS) if (!m.tiles) for (const t of TILE_KINDS) k.push(`tiles/${m.id}_${t}`);
   k.push(...Object.values(DECOR_ART));
@@ -118,8 +119,9 @@ function artImg(key) {
   let c = artCache.get(key);
   if (!c) {
     const gw = gridOf(key);
-    c = document.createElement('canvas'); c.width = gw; c.height = Math.max(1, Math.round(gw * im.height / im.width));
-    const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(im, 0, 0, c.width, c.height);
+    c = VISUAL.smooth ? smoothScale(im, Math.min(im.width, key.startsWith('tiles/') ? 320 : gw * VISUAL.artRes)) : null;
+    if (!c) { c = document.createElement('canvas'); c.width = gw; c.height = Math.max(1, Math.round(gw * im.height / im.width)); const g0 = c.getContext('2d'); g0.imageSmoothingEnabled = false; g0.drawImage(im, 0, 0, c.width, c.height); }
+    const g = c.getContext('2d');
     if (key.startsWith('tiles/')) calmTile(g, c.width, c.height);
     else if (key.startsWith('decor/')) c = toneDown(c);
     else if (OUTLINED.some(p => key.startsWith(p))) c = outlined(c);
@@ -143,15 +145,31 @@ function calmTile(g, w, h) {
   }
   g.save(); g.clearRect(0, 0, w, h); g.filter = `saturate(${S}) brightness(${B})`; g.drawImage(src, 0, 0); g.restore();
 }
+// 高质量缩小：每次最多缩一半，逐级缩到目标宽度，细节保留、边缘平滑
+function smoothScale(im, tw) {
+  let src = im, w = im.width, h = im.height;
+  const th = Math.max(1, Math.round(tw * h / w));
+  while (true) {
+    const nw = Math.max(tw, Math.round(w / 2)), nh = Math.max(th, Math.round(h / 2));
+    const c = document.createElement('canvas'); c.width = nw; c.height = nh;
+    const g = c.getContext('2d'); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.drawImage(src, 0, 0, nw, nh);
+    src = c; w = nw; h = nh;
+    if (nw === tw) return c;
+  }
+}
 // 角色描边：外围加一圈 1 像素深色轮廓，颜色略微提亮，在任何地面上都能一眼认出
 const OUTLINED = ['lord/', 'heroes/', 'units/', 'enemies/'];
 function outlined(c) {
-  const o = document.createElement('canvas'); o.width = c.width + 2; o.height = c.height + 2;
-  const g = o.getContext('2d'); g.imageSmoothingEnabled = false;
+  // 平滑模式下缓存分辨率更高，轮廓按比例加粗，保持屏幕上约 1 像素
+  const k = VISUAL.smooth ? Math.max(1, Math.round(VISUAL.artRes * 0.7)) : 1;
+  const o = document.createElement('canvas'); o.width = c.width + k * 2; o.height = c.height + k * 2;
+  const g = o.getContext('2d'); g.imageSmoothingEnabled = !!VISUAL.smooth;
   const sil = document.createElement('canvas'); sil.width = c.width; sil.height = c.height;
   const sg = sil.getContext('2d'); sg.drawImage(c, 0, 0); sg.globalCompositeOperation = 'source-in'; sg.fillStyle = VISUAL.outline; sg.fillRect(0, 0, c.width, c.height);
-  for (const [dx, dy] of [[0, 1], [2, 1], [1, 0], [1, 2], [0, 0], [2, 0], [0, 2], [2, 2]]) g.drawImage(sil, dx, dy);
-  g.filter = `saturate(${VISUAL.charSat}) brightness(${VISUAL.charBright})`; g.drawImage(c, 1, 1); g.filter = 'none';
+  g.globalAlpha = VISUAL.outlineAlpha;
+  for (let a = 0; a < 8; a++) g.drawImage(sil, k + Math.round(Math.cos(a * Math.PI / 4) * k), k + Math.round(Math.sin(a * Math.PI / 4) * k));
+  g.globalAlpha = 1;
+  g.filter = `saturate(${VISUAL.charSat}) brightness(${VISUAL.charBright})`; g.drawImage(c, k, k); g.filter = 'none';
   return o;
 }
 // 场景装饰（树、石头）压暗、降饱和，退到角色后面
@@ -160,12 +178,34 @@ function toneDown(c) {
   const g = o.getContext('2d'); g.filter = `saturate(${VISUAL.decorSat}) brightness(${VISUAL.decorBright})`; g.drawImage(c, 0, 0);
   return o;
 }
-function blitPixel(c, x, y, w, h) { const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false; ctx.drawImage(c, x, y, w, h); ctx.imageSmoothingEnabled = sm; }
+function blitPixel(c, x, y, w, h) { const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = !!VISUAL.smooth; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(c, x, y, w, h); ctx.imageSmoothingEnabled = sm; }
+// 投影：角色和建筑的影子朝右下方斜着铺在地面上（光从左上方来），影子是模糊过的黑色轮廓
+const shadowCache = new WeakMap();
+function shadowOf(c) {
+  let s = shadowCache.get(c); if (s) return s;
+  const p = Math.ceil(c.width * 0.04) + 2;
+  s = document.createElement('canvas'); s.width = c.width + p * 2; s.height = c.height + p * 2; s.pad = p;
+  const g = s.getContext('2d'); g.filter = `blur(${Math.max(1, p * 0.6)}px)`; g.drawImage(c, p, p); g.filter = 'none';
+  g.globalCompositeOperation = 'source-in'; g.fillStyle = '#0a0806'; g.fillRect(0, 0, s.width, s.height);
+  shadowCache.set(c, s); return s;
+}
+let noCast = false;
+function castShadow(c, x, foot, w, h, flip) {
+  if (!VISUAL.cast || noCast) return;
+  const s = shadowOf(c), k = w / c.width;
+  ctx.save(); ctx.globalAlpha *= VISUAL.castAlpha;
+  ctx.translate(x, foot); ctx.transform(1, 0, -VISUAL.castLen, -VISUAL.castSlant, 0, 0);
+  if (flip) ctx.scale(-1, 1);
+  ctx.imageSmoothingEnabled = true; ctx.drawImage(s, -w / 2 - s.pad * k, -h - s.pad * k, s.width * k, s.height * k);
+  ctx.restore();
+}
+const CAST_SKIP = ['tiles/', 'portraits/', 'fx/'];
 // 有图画图（底边对齐 y + size/2），没图画 emoji。flipE / flipA：emoji 和图片各自是否翻转
 function drawArt(key, e, x, y, size, flipE, flipA, scale = ART_SCALE.char, fl = 0) {
   if (!ART[key]) return drawSprite(e, x, y, size, flipE);
   const h = size * scale, c = artImg(key), w = h * c.width / c.height, top = y + size / 2 - h;
   const blit = im => { if (flipA) { ctx.save(); ctx.translate(x, 0); ctx.scale(-1, 1); blitPixel(im, -w / 2, top, w, h); ctx.restore(); } else blitPixel(im, x - w / 2, top, w, h); };
+  if (!CAST_SKIP.some(p => key.startsWith(p))) castShadow(c, x, top + h, w, h, flipA);
   blit(c);
   if (fl > 0) { const a = ctx.globalAlpha; ctx.globalAlpha = a * Math.min(1, fl); blit(whiteOf(c)); ctx.globalAlpha = a; }
 }
@@ -198,7 +238,29 @@ function drawPortrait(keys, e, x, y, size) {
   const c = artImg(key), w = size * 1.3 * c.width / c.height;
   blitPixel(c, x - w / 2, y - size * 0.65, w, size * 1.3);
 }
-const iconHtml = (key, e) => ART[key] ? `<img class="ai" src="assets/${key}.png" alt="">` : e;
+// 界面图标：有像素图用像素图，没有就用 icons.js 里的界面图标，不再显示 emoji
+const piHtml = n => ART['ui/' + n] ? `<img class="ai pix" src="assets/ui/${n}.png" alt="">` : typeof UI_ICONS !== 'undefined' && UI_ICONS[n] ? `<span class="pi pi-${n}"></span>` : '';
+const artImgHtml = key => `<img class="ai" src="assets/${key}.png" alt="">`;
+const ICON_FALLBACK = { buildings: 'b_', units: 'u_', heroes: 'h_' };
+const iconHtml = (key, e) => ART[key] ? artImgHtml(key) : piHtml((ICON_FALLBACK[key.split('/')[0]] || '') + key.split('/')[1]) || e;
+const uIco = t => iconHtml('units/' + t, UNITS[t] ? UNITS[t].icon : '');
+const evoIco = (id, base) => ART['units/' + id] ? artImgHtml('units/' + id) : uIco(base);
+const hIco = id => ART['portraits/' + id] ? artImgHtml('portraits/' + id) : iconHtml('heroes/' + id, HEROES[id].icon);
+const bIco = t => iconHtml('buildings/' + t, BUILDINGS[t].icon);
+const lordIco = () => ART['portraits/lord'] ? artImgHtml('portraits/lord') : piHtml('lord') || LORD.icon;
+// 其余界面里的 emoji（资源、按钮）换成同名界面图标；只替换标签之间的文字，不碰 title 等属性
+const EMOJI_PI = { '🪙': 'gold', '🪵': 'wood', '🪨': 'stone', '🍖': 'food', '⬆': 'up', '🔧': 'repair', '🚩': 'flag', '👣': 'follow', '🔒': 'lock', '⚔': 'swords', '🏹': 'bow',
+  '⚡': 'bolt', '💥': 'boom', '🔗': 'link', '⭐': 'star', '🍽': 'bowl', '🛕': 'temple', '⏩': 'speed', '⏸': 'pause', '✖': 'x', '🎯': 'target', '📍': 'pin', '✝': 'wings',
+  '👑': 'crown', '💀': 'skull', '📦': 'chest', '📖': 'scroll', '❤': 'heart', '⏳': 'time', '✨': 'magic', '🛡': 'shield', '♻': 'heal', '🗑': 'x' };
+const EMOJI_RE = new RegExp('(' + Object.keys(EMOJI_PI).join('|') + ')\uFE0F?', 'g');
+const iconize = html => typeof UI_ICONS === 'undefined' ? html : html.replace(/(<[^>]*>)|([^<]+)/g, (m, tag, text) => tag || text.replace(EMOJI_RE, (e, k) => piHtml(EMOJI_PI[k]) || e));
+function injectIconCss() {
+  if (typeof UI_ICONS === 'undefined' || document.getElementById('pi-css')) return;
+  const st = document.createElement('style'); st.id = 'pi-css';
+  st.textContent = '.pi{display:inline-block;width:1.3em;height:1.3em;vertical-align:-0.3em;background:center/contain no-repeat;margin:0 .08em}' + Object.keys(UI_ICONS).map(k => `.pi-${k}{background-image:url(${UI_ICONS[k]})}`).join('');
+  document.head.appendChild(st);
+}
+injectIconCss();
 // 有图时角色比 emoji 高，血条、名字等要往上挪这么多
 const artLift = (key, size) => ART[key] ? size * (ART_SCALE.char - 1) : 0;
 const unitArtKey = u => u.evo && ART['units/' + u.evo] ? 'units/' + u.evo : (u.d.hero ? 'heroes/' : 'units/') + u.type;
@@ -410,7 +472,7 @@ function paintGround(m, g, x0, y0, w, h) {
   const def = m.def, GWm = m.GW, GHm = m.GH, tk = def.tiles || def.id;
   const tx0 = Math.max(0, Math.floor(x0 / T) - 1), ty0 = Math.max(0, Math.floor(y0 / T) - 1), tx1 = Math.min(GWm - 1, Math.ceil((x0 + w) / T) + 1), ty1 = Math.min(GHm - 1, Math.ceil((y0 + h) / T) + 1);
   // 地面贴图：一张无缝贴图铺满 8×8 格（320 像素）
-  g.imageSmoothingEnabled = false;
+  g.imageSmoothingEnabled = !!VISUAL.smooth;
   const pat = kind => { const im = artImg(`tiles/${tk}_${kind}`); if (!im) return null; const p = g.createPattern(im, 'repeat'); p.setTransform(new DOMMatrix().scale(320 / im.width)); return p; };
   const pLow = pat('low'), pHigh = pat('high'), pRamp = pat('ramp'), pCliff = pat('cliff'), pWater = pat('water');
   g.fillStyle = pLow || def.ground[0]; g.fillRect(x0, y0, w, h);
@@ -459,7 +521,7 @@ function paintGround(m, g, x0, y0, w, h) {
     for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) { const i = ty * GWm + tx; if (m.ramp[i] && !m.water[i]) mg.fillRect(tx * T - 2 - lx, ty * T - 2 - ly, T + 4, T + 4); }
     const lay = document.createElement('canvas'); lay.width = LW; lay.height = LH;
     const lg = lay.getContext('2d'); lg.filter = 'blur(5px)'; lg.drawImage(mk, 0, 0); lg.filter = 'none';
-    lg.globalCompositeOperation = 'source-in'; lg.imageSmoothingEnabled = false;
+    lg.globalCompositeOperation = 'source-in'; lg.imageSmoothingEnabled = !!VISUAL.smooth;
     const im = artImg(`tiles/${tk}_ramp`), pr = lg.createPattern(im, 'repeat');
     pr.setTransform(new DOMMatrix().translate(-lx, -ly).scale(320 / im.width));
     lg.fillStyle = pr; lg.fillRect(0, 0, LW, LH);
@@ -1040,9 +1102,9 @@ function drawWilds(vis) {
   }
   for (const l of G.lairs || []) if (vis(l.x, l.y)) {
     const L = LAIRS[l.kind];
-    ctx.globalAlpha = l.alive ? 1 : 0.35; drawArt('lairs/' + l.kind, L.icon, l.x, l.y, 60, false, false, 1.6); ctx.globalAlpha = 1;
+    ctx.globalAlpha = l.alive ? 1 : 0.35; drawArt('lairs/' + l.kind, L.icon, l.x, l.y + 10, 60, false, false, 2.3); ctx.globalAlpha = 1;
     ctx.font = 'bold 12px "Microsoft YaHei",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = l.alive ? '#ffb070' : '#9a9a9a'; ctx.fillText(l.alive ? `${L.name} Lv${L.lvl}` : `${L.name}（已清剿）`, l.x, l.y + 34);
+    ctx.fillStyle = l.alive ? '#ffb070' : '#9a9a9a'; ctx.fillText(l.alive ? `${L.name} Lv${L.lvl}` : `${L.name}（已清剿）`, l.x, l.y + 50);
   }
 }
 function newFac(id, k, at) {
@@ -1266,7 +1328,7 @@ function drawEBld(e) {
   const own = 'ebld/' + f.id + '_' + e.eb.kind, c = ART[own] ? artImg(own) : ART[key] && tinted(key, FACTIONS[f.id].hue);
   let top = e.y - w * 0.3;
   const sh = e.flash > 0 ? rand(-2, 2) : 0;
-  if (c) { const h = w * ART_SCALE.bld, ww = h * c.width / c.height; top = e.y - 2 + w / 2 - h; blitPixel(c, e.x - ww / 2 + sh, top, ww, h);
+  if (c) { const h = w * ART_SCALE.bld, ww = h * c.width / c.height; top = e.y - 2 + w / 2 - h; castShadow(c, e.x, top + h, ww, h, false); blitPixel(c, e.x - ww / 2 + sh, top, ww, h);
     if (e.flash > 0) { ctx.globalAlpha = 0.45; blitPixel(whiteOf(c), e.x - ww / 2 + sh, top, ww, h); ctx.globalAlpha = 1; } }
   else { drawSprite(D.icon, e.x + sh, e.y, w * 0.6); if (e.flash > 0) { ctx.globalAlpha = 0.35; ctx.fillStyle = '#fff'; ctx.fillRect(x0, y0, w, w); ctx.globalAlpha = 1; } }
   // 旗帜
@@ -2632,8 +2694,8 @@ function drawCorpses(vis) {
     const k = c.t / c.life, fall = Math.min(1, k * 3.2), foot = c.y + c.size / 2;
     ctx.save(); ctx.globalAlpha = k < 0.55 ? 1 : Math.max(0, 1 - (k - 0.55) / 0.45);
     ctx.translate(c.x, foot + (c.fly ? fall * 14 : k * 5)); ctx.rotate((c.flip ? -1 : 1) * fall * 1.35); ctx.scale(1, 1 - fall * 0.15); ctx.translate(-c.x, -foot);
-    ctx.filter = 'brightness(0.65) saturate(0.7)';
-    drawArt(c.key, c.icon, c.x, c.y, c.size, c.flip, c.flip);
+    ctx.filter = 'brightness(0.65) saturate(0.7)'; noCast = true;
+    drawArt(c.key, c.icon, c.x, c.y, c.size, c.flip, c.flip); noCast = false;
     ctx.filter = 'none'; ctx.restore();
   }
 }
@@ -2659,6 +2721,61 @@ function updateFx(dt) {
   G.effects = G.effects.filter(f => f.t < f.life + (f.kind === 'meteor' || f.kind === 'strike' ? 0.01 : 0));
   for (const d of G.delayed) { d.t -= dt; if (d.t <= 0) { d.fn(); d.done = true; } }
   G.delayed = G.delayed.filter(d => !d.done);
+}
+
+// ================= 光影 =================
+// 环境光把整个画面压暗一层，光源处“挖”出亮区并叠一层彩色光晕；再加一层左上偏暖、右下偏冷的日光渐变
+const BLD_LIGHT = { castle: [300, '#ffcf8a', 1], house: [120, '#ffb870', 0.7], smithy: [150, '#ff9a4a', 0.9], magic: [170, '#c08aff', 0.9], altar: [170, '#d0b0ff', 0.8],
+  shrine: [150, '#fff0b0', 0.8], barracks: [130, '#ffc080', 0.6], arrow: [100, '#ffc080', 0.5], cannon: [100, '#ffb070', 0.5], training: [110, '#ffc080', 0.5] };
+let lightC = null, glowC = null;
+function collectLights(vis) {
+  const L = [], add = (x, y, r, col, k) => { if (x + r > VIEW.x0 && x - r < VIEW.x1 && y + r > VIEW.y0 && y - r < VIEW.y1) L.push([x, y, r, col, k]); };
+  for (const b of G.buildings) { const d = BLD_LIGHT[b.type]; if (d) add(b.x, b.y, d[0] * (0.9 + 0.1 * b.lvl), d[1], d[2]); }
+  const h = G.lord; if (!h.dead) add(h.x, h.y, 170, '#fff2d0', 0.75);
+  for (const u of G.units) if (u.d.hero && !u.dead) add(u.x, u.y, 110, u.d.color, 0.5);
+  for (const e of G.enemies) {
+    if (e.eb) { if (e.eb.kind === 'hq') add(e.x, e.y, 260, '#ffb070', 0.8); else if (e.eb.kind === 'tower' || e.eb.kind === 'barracks') add(e.x, e.y, 110, '#ff9a5a', 0.55); }
+    else if (e.camp) add(e.x, e.y, 160, '#ff8a4a', 0.7);
+    else if (e.boss) add(e.x, e.y, e.r * 3, e.d.color, 0.6);
+    else if (e.st && e.st.burn) add(e.x, e.y, 60, '#ff8a3a', 0.6);
+  }
+  for (const p of G.projs) if (p.kind !== 'arrow') add(p.x, p.y, 40 + p.r * 5, p.color, 0.7);
+  for (const f of G.effects) {
+    if (f.t < 0) continue; const k = 1 - f.t / f.life;
+    if (f.kind === 'flash') add(f.x, f.y, f.r * 1.6, '#ffd090', k);
+    else if (f.kind === 'ring') add(f.x, f.y, Math.max(f.r0, f.r1) * 1.2, f.color, k * 0.8);
+    else if (f.kind === 'rune') add(f.x, f.y, f.r * 2.2, f.color, Math.sin(Math.min(1, f.t / f.life) * Math.PI));
+    else if (f.kind === 'meteor') { const hh = (1 - f.t / f.life) * 500; add(f.x + hh * 0.5, f.y - hh, 160, '#ff9a4a', 1); }
+  }
+  for (const r of G.relics || []) add(r.x, r.y, 90, '#ffe08a', 0.6);
+  for (const l of G.lairs || []) if (l.alive) add(l.x, l.y, 130, '#ff9a4a', 0.55);
+  return L;
+}
+function drawLighting(vis) {
+  if (!VISUAL.lights) return;
+  const z = G.cam.z, S = 4, W = Math.ceil(VW / S), H = Math.ceil(VH / S);
+  if (!lightC || lightC.width !== W || lightC.height !== H) { lightC = document.createElement('canvas'); lightC.width = W; lightC.height = H; glowC = document.createElement('canvas'); glowC.width = W; glowC.height = H; }
+  const lg = lightC.getContext('2d'), gg = glowC.getContext('2d'), [ar, ag, ab] = VISUAL.ambientColor;
+  lg.globalCompositeOperation = 'source-over'; lg.clearRect(0, 0, W, H); lg.fillStyle = `rgba(${ar},${ag},${ab},${VISUAL.ambient})`; lg.fillRect(0, 0, W, H);
+  lg.globalCompositeOperation = 'destination-out'; gg.clearRect(0, 0, W, H); gg.globalCompositeOperation = 'lighter';
+  const sx = x => ((x - G.cam.x) * z + VW / 2) / S, sy = y => ((y - G.cam.y) * z + VH / 2) / S;
+  for (const [x, y, r, col, k] of collectLights(vis)) {
+    const X = sx(x), Y = sy(y), R = r * z / S; if (R < 1) continue;
+    let gr = lg.createRadialGradient(X, Y, 0, X, Y, R); gr.addColorStop(0, `rgba(0,0,0,${Math.min(1, k)})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    lg.fillStyle = gr; lg.fillRect(X - R, Y - R, R * 2, R * 2);
+    gr = gg.createRadialGradient(X, Y, 0, X, Y, R * 0.8); gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    gg.globalAlpha = Math.min(1, k) * 0.5; gg.fillStyle = gr; gg.fillRect(X - R, Y - R, R * 2, R * 2);
+  }
+  gg.globalAlpha = 1;
+  ctx.save(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(lightC, 0, 0, VW, VH);
+  ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = VISUAL.glow; ctx.drawImage(glowC, 0, 0, VW, VH);
+  if (VISUAL.sun > 0) {
+    ctx.globalCompositeOperation = 'soft-light'; ctx.globalAlpha = 1;
+    const sg = ctx.createLinearGradient(0, 0, VW, VH); sg.addColorStop(0, `rgba(255,226,170,${VISUAL.sun * 4})`); sg.addColorStop(1, `rgba(30,40,90,${VISUAL.sun * 4})`);
+    ctx.fillStyle = sg; ctx.fillRect(0, 0, VW, VH);
+  }
+  ctx.restore();
 }
 
 // ================= 主循环 =================
@@ -3067,6 +3184,7 @@ function render() {
     ctx.fillRect(q.x - q.size / 2, q.y - q.size / 2, q.size, q.size);
   }
   ctx.globalAlpha = 1;
+  drawLighting(vis);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (const t of G.texts) {
     if (!vis(t.x, t.y)) continue;
@@ -3290,9 +3408,9 @@ function drawUnit(u) {
   if (G.group.includes(u.id) || (G.sel && G.sel.kind === 'unit' && G.sel.id === u.id)) { ctx.strokeStyle = '#9fff7a'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.ellipse(u.x, u.y + 6, hero ? 26 : 19, hero ? 13 : 10, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
   if (u.rageT > 0) { ctx.fillStyle = 'rgba(255,80,40,0.3)'; ctx.beginPath(); ctx.arc(u.x, u.y, 24 + Math.sin(G.time * 12) * 3, 0, TAU); ctx.fill(); }
   const big = u.d.pop === 2 || u.type === 'golem' || u.type === 'dragon';
-  poseBegin(u, u.y + 12);
+  poseBegin(u, u.y + 12); noCast = !!u.fly;
   drawArt(unitArtKey(u), u.d.icon, u.x, u.y + by, hero ? 34 : big ? 30 : 24, u.face < 0, u.face < 0, undefined, u.flash > 0 ? 0.6 : 0);
-  ctx.restore();
+  ctx.restore(); noCast = false;
   if (u.flash > 0 && !ART[unitArtKey(u)]) { ctx.fillStyle = 'rgba(255,80,80,0.4)'; ctx.beginPath(); ctx.arc(u.x, u.y + by, 12, 0, TAU); ctx.fill(); }
   const hr = u.hp / unitStats(u).hp;
   { const lift = artLift(unitArtKey(u), hero ? 34 : big ? 30 : 24); if (lift) { ctx.save(); ctx.translate(0, -lift); } u._lift = lift; }
@@ -3348,9 +3466,9 @@ function drawEnemy(e) {
   const wob = Math.sin(G.time * 10 + e.wob) * (e.boss ? 1 : 2);
   if (e.type === 'ghost') ctx.globalAlpha = 0.8;
   const ek = e.d.art ? 'enemies/' + e.d.art : 'enemies/' + e.type;
-  poseBegin(e, e.y + e.r);
-  drawArt(ek, e.d.icon, e.x, e.y + wob * 0.5 - (e.fly ? 10 : 0), e.r * 1.9, e.face > 0, e.face < 0, undefined, e.flash > 0 ? 0.85 : 0);
-  ctx.restore();
+  poseBegin(e, e.y + e.r); noCast = !!e.fly;
+  drawArt(ek, e.d.icon, e.x, e.y + wob * 0.5 - (e.fly ? 10 : 0), e.r * (e.king ? 1.45 : 1.9), e.face > 0, e.face < 0, undefined, e.flash > 0 ? 0.85 : 0);
+  ctx.restore(); noCast = false;
   if (e.flash > 0 && !ART[ek]) { ctx.globalAlpha = 0.6; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(e.x, e.y, e.r * 0.85, 0, TAU); ctx.fill(); }
   if (e.slowT > 0 || e.st.chill) { ctx.globalAlpha = 0.3; ctx.fillStyle = '#9adfff'; ctx.beginPath(); ctx.arc(e.x, e.y, e.r * 0.9, 0, TAU); ctx.fill(); }
   if (e.st.burn) { ctx.globalAlpha = 0.22; ctx.fillStyle = '#ff7a2a'; ctx.beginPath(); ctx.arc(e.x, e.y, e.r * 0.9, 0, TAU); ctx.fill(); }
@@ -3640,7 +3758,7 @@ function barItems() {
 function buildBarInit() {
   const tabs = BUILD_TABS.map((t, i) => `<div class="bt ${G.barTab === t.id ? 'on' : ''}" data-act="tab" data-i="${i}">${t.icon} ${t.name}</div>`).join('');
   const items = barItems().map((it, i) => `<div class="bb" data-act="quick" data-i="${i}" data-id="${it.id}" title="${it.d.name}：${it.d.desc}"><span class="bk">${KEY_LABEL[i] || ''}</span><span class="bi">${iconHtml((it.kind === 'bld' ? 'buildings/' : it.kind === 'hero' ? 'heroes/' : 'units/') + it.id, it.d.icon)}</span><span class="bn">${it.d.name}</span><span class="bc"></span></div>`).join('');
-  $build.innerHTML = `<div class="btabs">${tabs}<span class="bth">Tab 切换分页 · F1~F10 快捷选择</span></div><div class="bitems">${items}</div>`;
+  $build.innerHTML = iconize(`<div class="btabs">${tabs}<span class="bth">Tab 切换分页 · F1~F10 快捷选择</span></div><div class="bitems">${items}</div>`);
 }
 function setTab(i) {
   if (!G || i < 0) return;
@@ -3718,10 +3836,10 @@ function updateUI() {
     <span class="res" title="在场英雄 / 祭坛英雄位">🛕 ${heroesAlive().length}/${heroSlots()}</span>
     <span class="wave">${G.conq ? `${G.map.icon} 敌军强度 ${G.wave}` : `${G.map.icon} 第 ${G.wave}/${MAX_WAVE} 波${isBossWave(G.wave) ? ' · 首领' : ''}`}</span>${phase}
     <span class="spacer"></span>
-    <span class="tb ghost" data-act="lord" title="领主面板 (H)">${LORD.icon} 领主</span>
+    <span class="tb ghost" data-act="lord" title="领主面板 (H)">${lordIco()} 领主</span>
     <span class="tb ghost" data-act="speed" title="倍速 (T)">⏩ ${G.speed}x</span>
     <span class="tb ghost" data-act="pause" title="暂停 (P)">⏸</span>`;
-  if (top !== lastTop) { $top.innerHTML = top; lastTop = top; }
+  if (top !== lastTop) { $top.innerHTML = iconize(top); lastTop = top; }
   const items = barItems(), tk = G.tut && TUT[G.tut.i].key;
   for (const el of $build.querySelectorAll('.bb')) {
     const it = items[+el.dataset.i]; if (!it) continue;
@@ -3729,13 +3847,13 @@ function updateUI() {
     el.classList.toggle('on', !!st.on); el.classList.toggle('cant', !!st.cant); el.classList.toggle('locked', !!st.locked);
     el.classList.toggle('alive', !!st.alive); el.classList.toggle('dead', !!st.dead);
     el.classList.toggle('tut', it.id === tk);
-    const bc = el.querySelector('.bc'); if (bc.textContent !== st.text) bc.textContent = st.text;
+    const bc = el.querySelector('.bc'); if (bc.dataset.t !== st.text) { bc.dataset.t = st.text; bc.innerHTML = iconize(st.text); }
   }
   $build.classList.toggle('battle', !canBuild() && (G.barTab === 'build' || G.barTab === 'def'));
   const gh = guideHtml();
-  if (gh !== lastGuide) { $guide.innerHTML = gh; lastGuide = gh; $guide.classList.toggle('hidden', !gh); }
+  if (gh !== lastGuide) { $guide.innerHTML = iconize(gh); lastGuide = gh; $guide.classList.toggle('hidden', !gh); }
   const html = panelHtml();
-  if (html !== lastPanel) { $panel.innerHTML = html; lastPanel = html; }
+  if (html !== lastPanel) { $panel.innerHTML = iconize(html); lastPanel = html; }
   $panel.classList.toggle('hidden', !html);
 }
 function btn(act, i, label, cost, enabled, extra = '') {
@@ -3767,7 +3885,7 @@ const onText = on => on ? `${ST_INFO[on.st].icon}${Math.round((on.chance === und
 const stLine = o => { const ks = Object.keys(o.st || {}); return ks.length ? `<p class="tip">状态：${ks.map(k => `${ST_INFO[k].icon}${ST_INFO[k].name} ${o.st[k].t.toFixed(1)}s`).join('、')}</p>` : ''; };
 function lordPanel() {
   const h = G.lord, st = lordStats(), md = LORD.modes[h.mode];
-  let s = `<h3>${LORD.icon} ${LORD.name} <small>Lv${h.lvl}</small></h3>${xpBar(h, LVL_MAX.lord)}
+  let s = `<h3>${lordIco()} ${LORD.name} <small>Lv${h.lvl}</small></h3>${xpBar(h, LVL_MAX.lord)}
     <p>你本人。剑、弓、魔法三种攻击方式随时切换（<b>Q</b>），每种有自己的技能（<b>空格</b>）。击杀敌人获得经验自动升级。阵亡后 10 秒在主城复活。</p>
     <h4>当前：${md.icon} ${md.name} <small>${md.desc}</small></h4>${statRows(st, h.hp, { ranged: h.mode !== 'sword' })}${stLine(h)}`;
   s += `<h4>攻击方式</h4>`;
@@ -3786,13 +3904,13 @@ function unitPanel(u) {
   const d = u.d, st = unitStats(u), ranged = d.range > 100;
   if (!d.hero) {
     const tr = G.train[u.type] || 1;
-    return `<h3>${d.icon} ${d.name} <small>${d.role || ''} · Lv${u.lvl}</small></h3>${d.special ? '' : xpBar(u, lvlMaxOf(u))}${u.evo ? `<p class="tip">⭐ 由${d.baseName}进化而来，等级上限 ${EVO_LVL_MAX}</p>` : ''}${evoBtns(u)}<p>${d.desc || ''}</p>${statRows(st, u.hp, { ranged })}
+    return `<h3>${u.evo ? evoIco(u.evo, u.type) : uIco(u.type)} ${d.name} <small>${d.role || ''} · Lv${u.lvl}</small></h3>${d.special ? '' : xpBar(u, lvlMaxOf(u))}${u.evo ? `<p class="tip">⭐ 由${d.baseName}进化而来，等级上限 ${EVO_LVL_MAX}</p>` : ''}${evoBtns(u)}<p>${d.desc || ''}</p>${statRows(st, u.hp, { ranged })}
       ${d.onhit ? `<p class="tip">特殊攻击：${onText(d.onhit)}</p>` : ''}${stLine(u)}
       ${u.temp !== undefined ? `<p class="tip">召唤物，${Math.ceil(u.temp)} 秒后消失</p>` : `<p class="tip">击杀敌人获得经验，每级生命和攻击 +10%、双防 +2。${!d.special && tr > 1 ? `训练场加成 +${(tr - 1) * 15}%。` : ''}阵亡后要重新花 🪙${unitCost(u.type)} 招募。</p>`}
       ${u.temp === undefined ? orderBtns(u) : ''}`;
   }
   const ab = d.ability, hold = u.order && u.order !== 'follow';
-  let s = `<h3>${d.icon} ${d.name} <small>${d.title} · Lv${u.lvl}</small></h3>${xpBar(u, LVL_MAX.hero)}<p>${d.desc}</p>${statRows(st, u.hp, { ranged })}${stLine(u)}
+  let s = `<h3>${hIco(u.type)} ${d.name} <small>${d.title} · Lv${u.lvl}</small></h3>${xpBar(u, LVL_MAX.hero)}<p>${d.desc}</p>${statRows(st, u.hp, { ranged })}${stLine(u)}
     <h4>${ab.icon} ${ab.name} <small>冷却 ${(ab.cd * (1 - st.cdr)).toFixed(1)} 秒 · ${u.abT > 0 ? `还需 ${Math.ceil(u.abT)} 秒` : '就绪'}</small></h4><p class="tip">${ab.desc}（自动释放）</p>
     <h4>成长技能 <small>升级自动学会</small></h4><div class="perks">`;
   for (const p of d.perks) {
@@ -3807,7 +3925,7 @@ function evoBtns(u) {
   if (!canEvolve(u)) return !u.evo && !u.d.special && !u.d.hero && u.temp === undefined && EVOLUTIONS[u.type] ? `<p class="tip">满 ${LVL_MAX.unit} 级后可以在训练场进化（二选一）。</p>` : '';
   const tg = trainingGround(), c = EVO_COST(u.type);
   let s = `<h4>⭐ 选择进化方向 <small>${tg ? '二选一，不能更改' : '需要先建造训练场'}</small></h4>`;
-  for (const br of EVOLUTIONS[u.type]) s += btn('evolve', `${u.id}:${br.id}`, `${br.icon} ${br.name} <small>${br.desc}</small>`, costStr(c), !!tg && canPay(c));
+  for (const br of EVOLUTIONS[u.type]) s += btn('evolve', `${u.id}:${br.id}`, `${evoIco(br.id, u.type)} ${br.name} <small>${br.desc}</small>`, costStr(c), !!tg && canPay(c));
   return s;
 }
 function groupPanel() {
@@ -3817,7 +3935,7 @@ function groupPanel() {
   const cnt = {};
   for (const u of grp) { const k = u.type; cnt[k] = cnt[k] || { d: u.d, n: 0, hp: 0, mx: 0 }; cnt[k].n++; cnt[k].hp += u.hp; cnt[k].mx += unitStats(u).hp; }
   let s = `<h3>🎯 已选中 ${grp.length} 个单位</h3><div class="grp">`;
-  for (const k in cnt) { const c = cnt[k]; s += `<div class="gu" title="${c.d.name}"><span>${c.d.icon}</span><b>×${c.n}</b><i style="width:${c.hp / c.mx * 100}%"></i></div>`; }
+  for (const k in cnt) { const c = cnt[k]; s += `<div class="gu" title="${c.d.name}"><span>${c.d.hero ? hIco(k) : uIco(k)}</span><b>×${c.n}</b><i style="width:${c.hp / c.mx * 100}%"></i></div>`; }
   s += `</div><div class="row2">${btn('groupFollow', 0, '👣 跟随领主', '', true)}${btn('groupRally', 0, '🚩 回集结点', '', true)}</div>
     ${btn('groupClear', 0, '✖ 取消选择', '', true)}
     <p class="tip"><b>左键</b>点地面：选中的单位排成方阵走过去驻守（远程站后排）。<b>Shift</b> 拖框或点击追加/移除单位，<b>Ctrl+数字</b> 编队，<b>数字</b> 选中该队（按两下视角跳过去），<b>右键</b> 取消选择。</p>`;
@@ -3830,7 +3948,7 @@ function shrinePanel(b) {
   for (const id of dead) {
     const d = HEROES[id], sn = G.heroDead[id], c = reviveCost(id), why = reviveLock(id);
     const perks = d.perks.filter(p => sn.lvl >= p.lvl).map(p => p.icon + p.name).join('、') || '无';
-    s += btn('revive', id, `${d.icon} ${d.name} Lv${sn.lvl} <small>技能：${perks}｜原价 ${heroCost(id)} + 估值 ${heroValue(id, sn.lvl)}，×130%${b.d.discount[b.lvl - 1] ? `，祭坛折扣 ${pct(b.d.discount[b.lvl - 1])}` : ''}${why && why !== '金币不足' ? `｜${why}` : ''}</small>`, `🪙${c}`, !why);
+    s += btn('revive', id, `${hIco(id)} ${d.name} Lv${sn.lvl} <small>技能：${perks}｜原价 ${heroCost(id)} + 估值 ${heroValue(id, sn.lvl)}，×130%${b.d.discount[b.lvl - 1] ? `，祭坛折扣 ${pct(b.d.discount[b.lvl - 1])}` : ''}${why && why !== '金币不足' ? `｜${why}` : ''}</small>`, `🪙${c}`, !why);
   }
   return s;
 }
@@ -3845,14 +3963,14 @@ function altarRoster(b) {
     else if (b.lvl < d.altar) { state = `需 ${d.altar} 级祭坛`; cls = 'locked'; }
     else { const why = summonLock(id); state = `🪙${heroCost(id)}`; cls = why ? 'cant' : ''; act = `data-act="summon" data-i="${id}"`; }
     const tip = `${d.name}（${d.title}）：${d.desc}｜${d.ability.icon}${d.ability.name}：${d.ability.desc}`;
-    s += `<div class="hb ${cls}" ${act} title="${tip}" style="--c:${d.color}"><span class="hi">${d.icon}</span><b>${d.name}</b><span>${state}</span></div>`;
+    s += `<div class="hb ${cls}" ${act} title="${tip}" style="--c:${d.color}"><span class="hi">${hIco(id)}</span><b>${d.name}</b><span>${state}</span></div>`;
   }
   return s + `</div><p class="tip">每种英雄同时只能有一位。阵亡后要在复活祭坛复活（保留等级和技能）。英雄每波吃 ${FOOD_UPKEEP.hero} 粮食。悬停查看技能。</p>`;
 }
 function panelHtml() {
   if (G.buildMode) {
     const d = BUILDINGS[G.buildMode];
-    return `<h3>${d.icon} 建造：${d.name}</h3><p>${d.desc}</p><p class="cost">${costStr(bCost(G.buildMode, 1))}</p>
+    return `<h3>${bIco(G.buildMode)} 建造：${d.name}</h3><p>${d.desc}</p><p class="cost">${costStr(bCost(G.buildMode, 1))}</p>
       <p class="tip">左键放置${d.drag ? '，按住拖动可连续建造' : '，按住 Shift 可连续放置'}；右键或 Esc 取消。不能横跨悬崖。</p>`;
   }
   if (!G.sel) return '';
@@ -3862,7 +3980,7 @@ function panelHtml() {
   const b = G.bmap.get(G.sel.id);
   if (!b) { G.sel = null; return ''; }
   const d = b.d, L = b.lvl - 1, mh = bldMaxHp(b), prep = canBuild();
-  let s = `<h3>${d.icon} ${bName(b)} <small>Lv${b.lvl}${hAt(b.x, b.y) ? ' · 高地' : ''}</small></h3><p>${d.desc}</p><div class="kv"><span>生命</span><b>${Math.ceil(b.hp)}/${Math.round(mh)}</b>`;
+  let s = `<h3>${bIco(b.type)} ${bName(b)} <small>Lv${b.lvl}${hAt(b.x, b.y) ? ' · 高地' : ''}</small></h3><p>${d.desc}</p><div class="kv"><span>生命</span><b>${Math.ceil(b.hp)}/${Math.round(mh)}</b>`;
   if (d.trap) s += `<span>物理伤害</span><b>${Math.round(d.trap.patk[L] * G.s.towerDmg)}/${d.trap.cd}s</b>`;
   for (const k of RES_KEYS) { const v = bProd(b, k); if (v) s += `<span>${RES_ICON[k]} 产出</span><b>+${v.toFixed(1)}/s</b>`; }
   if (d.near || d.nearWater) s += `<span>附近加成</span><b>+${Math.round(b.bonus * 100)}%</b>`;
@@ -3889,17 +4007,17 @@ function panelHtml() {
     for (const t of RECRUITABLE) {
       const u = UNITS[t];
       const tip = `${u.name}（${u.role}）：${u.desc}｜生命 ${u.hp} 物攻 ${u.patk || 0} 魔攻 ${u.matk || 0} 物防 ${u.pdef || 0} 魔防 ${u.mdef || 0} 射程 ${u.range}${u.acc ? ` 精度 ${pct(u.acc)}` : ''} 每波口粮 ${u.pop * FOOD_UPKEEP.pop}${u.onhit ? ' ' + onText(u.onhit) : ''}`;
-      if (!isUnlocked('unit', t)) { s += `<div class="ub locked" title="${tip}">${u.icon}<b>${u.name}</b><span>🔒荣耀${unlockOf('unit', t).need}</span></div>`; continue; }
-      if (u.barracks > b.lvl) { s += `<div class="ub locked" title="${tip}">${u.icon}<b>${u.name}</b><span>${u.barracks}级兵营</span></div>`; continue; }
+      if (!isUnlocked('unit', t)) { s += `<div class="ub locked" title="${tip}">${uIco(t)}<b>${u.name}</b><span>🔒荣耀${unlockOf('unit', t).need}</span></div>`; continue; }
+      if (u.barracks > b.lvl) { s += `<div class="ub locked" title="${tip}">${uIco(t)}<b>${u.name}</b><span>${u.barracks}级兵营</span></div>`; continue; }
       const c = unitCost(t), ok = G.res.gold >= c && b.queue.length < QUEUE_MAX;
-      s += `<div class="ub ${ok ? '' : 'cant'}" data-act="recruit" data-i="${b.id}:${t}" title="${tip}">${u.icon}<b>${u.name}</b><span>🪙${c}</span></div>`;
+      s += `<div class="ub ${ok ? '' : 'cant'}" data-act="recruit" data-i="${b.id}:${t}" title="${tip}">${uIco(t)}<b>${u.name}</b><span>🪙${c}</span></div>`;
     }
     s += `</div>`;
-    if (b.queue.length) s += `<p class="tip">训练队列：${b.queue.map(q => UNITS[q].icon).join(' ')}</p>`;
+    if (b.queue.length) s += `<p class="tip">训练队列：${b.queue.map(q => uIco(q)).join(' ')}</p>`;
     const fl = Object.keys(G.fallen).filter(k => G.fallen[k] > 0);
     if (fl.length) {
       const tot = fl.reduce((a, k) => a + G.fallen[k] * unitCost(k), 0);
-      s += btn('refill', b.id, `♻ 补充阵亡士兵 <small>${fl.map(k => `${UNITS[k].icon}×${G.fallen[k]}`).join(' ')}（按原价重新招募）</small>`, `🪙${tot}`, G.res.gold >= unitCost(fl[0]));
+      s += btn('refill', b.id, `♻ 补充阵亡士兵 <small>${fl.map(k => `${uIco(k)}×${G.fallen[k]}`).join(' ')}（按原价重新招募）</small>`, `🪙${tot}`, G.res.gold >= unitCost(fl[0]));
     }
     s += `<p class="tip">没有人口上限，但每个士兵每波开战要吃 ${FOOD_UPKEEP.pop} 粮食（骑兵等大型单位翻倍）。也可以在下方【兵种】页直接招募。</p>`;
   }
@@ -3919,16 +4037,16 @@ function panelHtml() {
     if (!Object.keys(ready).length) s += `<p class="tip">现在没有满级士兵。士兵靠击杀升级，满级后会提示“可以进化”。</p>`;
     for (const t in ready) {
       const c = EVO_COST(t);
-      s += `<p class="tip"><b>${UNITS[t].icon} ${UNITS[t].name} ×${ready[t].length}</b> 可进化（每次进化 1 个）</p>`;
-      for (const br of EVOLUTIONS[t]) s += btn('evolveType', `${t}:${br.id}`, `${br.icon} ${br.name} <small>${br.desc}</small>`, costStr(c), canPay(c));
+      s += `<p class="tip"><b>${uIco(t)} ${UNITS[t].name} ×${ready[t].length}</b> 可进化（每次进化 1 个）</p>`;
+      for (const br of EVOLUTIONS[t]) s += btn('evolveType', `${t}:${br.id}`, `${evoIco(br.id, t)} ${br.name} <small>${br.desc}</small>`, costStr(c), canPay(c));
     }
     const cap = Math.min(TRAIN_MAX, b.lvl + 2);
     s += `<h4>兵种训练 <small>上限 ${cap} 级 · 对该兵种所有士兵生效</small></h4>`;
     for (const t of RECRUITABLE) {
       if (!isUnlocked('unit', t)) continue;
       const u = UNITS[t], lvl = G.train[t], c = trainCost(t);
-      s += lvl >= cap ? btn('none', 0, `${u.icon} ${u.name} Lv${lvl}`, lvl >= TRAIN_MAX ? '满级' : '需升级训练场', false)
-        : btn('train', t, `${u.icon} ${u.name} 训练 ${lvl}→${lvl + 1} <small>该兵种生命和攻击 +15%（叠加在经验等级上）</small>`, `🪙${c}`, G.res.gold >= c);
+      s += lvl >= cap ? btn('none', 0, `${uIco(t)} ${u.name} Lv${lvl}`, lvl >= TRAIN_MAX ? '满级' : '需升级训练场', false)
+        : btn('train', t, `${uIco(t)} ${u.name} 训练 ${lvl}→${lvl + 1} <small>该兵种生命和攻击 +15%（叠加在经验等级上）</small>`, `🪙${c}`, G.res.gold >= c);
     }
   }
   if (b.type === 'castle') s += `<p class="tip">主城自带箭楼，并持续产出材料（${G.map.name}：${Object.keys(G.map.castleProd).map(k => RES_ICON[k]).join('')}），被摧毁即失败。升级主城解锁 2/3 级建筑、法师塔和高级兵种。</p>`;

@@ -22,7 +22,12 @@ const BOSS_WAVES = { 5: 'troll', 10: 'demon', 15: 'lich', 20: 'dragon' };
 // vignette：屏幕四周压暗（0 = 关）  flowers：地上的小花草数量（有地面贴图时，贴图里已经有花草）
 // 画面基调：地面低对比、低饱和、偏暗；树石再退一层；角色加深色描边、略提亮，从背景里跳出来
 const VISUAL = { contrast: 0.32, sat: 0.55, bright: 0.78, vignette: 0.28, flowers: 0,
-  decorSat: 0.7, decorBright: 0.82, outline: '#140e0a', charSat: 1.12, charBright: 1.06 };
+  decorSat: 0.7, decorBright: 0.82, outline: '#1a120c', outlineAlpha: 0.75, charSat: 1.08, charBright: 1.04,
+  // 平滑：美术按原图高质量缩放（不再按像素网格硬取样），边缘柔和不刺眼；artRes 是缓存分辨率相对像素网格的倍数
+  smooth: true, artRes: 4,
+  // 光影：投影（光从左上方来，影子落向右下）、环境光（整体压暗一点）、局部光源（主城、火把、法术、弹道会照亮周围）
+  cast: true, castAlpha: 0.3, castLen: 0.55, castSlant: 0.32,
+  lights: true, ambient: 0.2, ambientColor: [16, 20, 42], glow: 0.35, sun: 0.07 };
 
 // ---------- 粮食与士气 ----------
 // 每波开战时，每名士兵按体型（pop）消耗粮食，每位英雄消耗 hero。粮食不够就会士气低迷甚至饥饿
