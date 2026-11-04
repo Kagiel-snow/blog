@@ -65,10 +65,12 @@ function shrink(file, key) {
 const assets = path.join(from, 'assets');
 let count = 0, before = 0, after = 0;
 for (const file of fs.existsSync(assets) ? fs.readdirSync(assets, { recursive: true }) : []) {
-  const full = path.join(assets, file);
-  if (!file.endsWith('.png') || !fs.statSync(full).isFile()) continue;
-  const key = file.split(path.sep).join('/').replace(/\.png$/, '');
-  const data = key.startsWith('_') ? fs.readFileSync(full) : shrink(full, key);
+  const full = path.join(assets, file), rel = file.split(path.sep).join('/');
+  // ui/poster.png is the promotional poster: the blog uses it as the project cover, the game never loads it.
+  if (!/\.(png|jpe?g|webp)$/i.test(file) || rel.startsWith('backups/') || rel === 'ui/poster.png' || !fs.statSync(full).isFile()) continue;
+  const key = rel.replace(/\.png$/, '');
+  // Photos such as the menu background (style.css) are copied as they are; only the PNG art is shrunk.
+  const data = !rel.endsWith('.png') || key.startsWith('_') ? fs.readFileSync(full) : shrink(full, key);
   fs.mkdirSync(path.dirname(path.join(to, 'assets', file)), { recursive: true });
   fs.writeFileSync(path.join(to, 'assets', file), data);
   count++; before += fs.statSync(full).size; after += data.length;

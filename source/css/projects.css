@@ -2,7 +2,7 @@
 .site-projects { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin: 18px 0 8px; }
 .project-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--snow-border); border-radius: 14px; background: var(--snow-card); color: var(--snow-text) !important; text-decoration: none !important; box-shadow: var(--snow-shadow); transition: border-color .2s, transform .2s; }
 .project-card:hover { border-color: var(--snow-blue); transform: translateY(-2px); }
-.project-card img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; margin: 0 !important; object-fit: cover; border-radius: 0 !important; }
+.project-card img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; margin: 0 !important; object-fit: cover; border-radius: 0 !important; }
 .project-body { padding: 12px 14px 14px; }
 .project-body strong { display: block; color: var(--snow-blue); font-size: 17px; }
 .project-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }

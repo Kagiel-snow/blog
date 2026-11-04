@@ -498,7 +498,7 @@ const SYNERGY = [
 // 选项：cost 花费、gain 获得、fx 特殊效果（见 game.js 的 EVENT_FX），什么都没有就是“离开”
 const EVENT_CHANCE = 0.5, EVENT_FROM = 2;
 const EVENTS = [
-  { id: 'caravan', icon: '🐫', name: '流浪商队', text: '一支商队在要塞外扎营，商人愿意和你做点买卖。', opts: [
+  { id: 'caravan', icon: '🐫', name: '流浪商队', text: '一支商队在城外扎营，商人愿意和你做点买卖。', opts: [
     { label: '买材料', cost: { gold: 100 }, gain: { wood: 160, stone: 160 } },
     { label: '卖材料', cost: { wood: 120, stone: 120 }, gain: { gold: 150 } },
     { label: '神秘货物', cost: { gold: 180 }, fx: 'boon', desc: '随机获得一项天赋' },
@@ -520,7 +520,7 @@ const EVENTS = [
     { label: '请他操练', cost: { gold: 130 }, fx: 'xpAll', desc: '所有士兵获得大量经验' },
     { label: '离开' }] },
   { id: 'spring', icon: '⛲', name: '圣泉', text: '工匠在城内挖出一眼泉水，泉水有治愈的力量。', opts: [
-    { label: '修缮要塞', fx: 'repair', desc: '所有建筑恢复满生命' },
+    { label: '修缮城池', fx: 'repair', desc: '所有建筑恢复满生命' },
     { label: '装瓶出售', gain: { gold: 120 } }] },
   { id: 'spy', icon: '🕵️', name: '敌营内讧', need: 'camp', text: '探子回报：敌方营地里为分赃吵了起来。', opts: [
     { label: '派人煽动', cost: { gold: 80 }, fx: 'spy', desc: '随机一座敌方据点损失 50% 生命，守卫减半' },

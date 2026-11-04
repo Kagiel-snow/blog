@@ -3,6 +3,8 @@ title: 工程
 layout: page
 aside: false
 top_img: false
+cover: /projects/legion-cover.jpg
+cover_type: img # Butterfly only sets this for posts; it points og:image at the cover
 comments: false
 ---
 
@@ -10,7 +12,7 @@ comments: false
 
 <div class="site-projects">
 <a class="project-card" href="/projects/legion/" target="_blank" rel="noopener">
-  <img src="/projects/legion-cover.jpg" alt="西幻领主模拟器 主菜单" width="720" height="480" loading="lazy">
+  <img src="/projects/legion-cover.jpg" alt="西幻领主模拟器 海报" width="960" height="540" loading="lazy">
   <div class="project-body">
     <strong>西幻领主模拟器</strong>
     <span class="project-tags"><em>开发中</em><em>网页游戏</em><em>HTML5 Canvas</em></span>
