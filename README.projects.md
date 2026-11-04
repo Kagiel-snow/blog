@@ -2,7 +2,7 @@
 
 菜单里的「工程」是 `/projects/`，放自己在做的东西。页面正文在 `source/projects/index.md`，卡片样式在 `source/css/projects.css`。新增一个工程就在 `site-projects` 里照样加一张 `project-card`。
 
-## 军团之王：要塞
+## 西幻领主模拟器
 
 - 地址 `/projects/legion/`，文件在 `source/projects/legion/`，封面 `source/projects/legion-cover.jpg`。
 - 游戏在单独的文件夹里开发。改完后在博客根目录运行（脚本会复制 index.html 引用的全部脚本和样式；美术图按游戏缓存的尺寸缩小：柔和渲染时为像素网格 × artRes、地块 320 像素，否则为 2 倍网格，画面不变，体积约为原来的十分之一）：
