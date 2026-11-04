@@ -78,7 +78,7 @@ h2 { font-size: 30px; color: #ffd76a; margin-bottom: 6px; text-shadow: 0 0 12px 
 .controls { color: #8d7e64; font-size: 13px; margin-top: 18px; line-height: 1.8; }
 .kbd { display: inline-block; padding: 1px 7px; border-radius: 4px; border: 1px solid #6a5a44; background: #221a26; color: #e9d9b0; font-size: 12px; }
 
-/* ===== 要塞版：顶栏 / 建造栏 / 侧栏 ===== */
+/* ===== 游戏界面：顶栏 / 建造栏 / 侧栏 ===== */
 #topbar { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
   padding: 7px 14px; background: linear-gradient(180deg, rgba(20,14,22,.95), rgba(20,14,22,.82)); border-bottom: 1px solid #4a3a2c;
   font-size: 15px; z-index: 5; font-variant-numeric: tabular-nums; }
@@ -264,3 +264,10 @@ h2 { font-size: 30px; color: #ffd76a; margin-bottom: 6px; text-shadow: 0 0 12px 
 .bb .bi .pi { width: 30px; height: 30px; display: block; margin: 0 auto; }
 .bb .bi img.ai { image-rendering: auto; }
 .pi + .pi, img.ai.pix { width: 1.3em; height: 1.3em; vertical-align: -0.3em; }
+/* 主菜单：海报背景 + 徽章 */
+#overlay.menu-bg { background: linear-gradient(180deg, rgba(10,8,16,.35), rgba(10,8,16,.55) 55%, rgba(8,6,12,.85)), url(assets/ui/menu_bg.jpg) center 70%/cover no-repeat, #120e16; }
+#overlay.menu-bg .panel.menu { background: rgba(18,13,20,.55); border: 1px solid rgba(255,215,106,.18); border-radius: 16px; padding: 22px 26px 26px; backdrop-filter: blur(3px); box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+#overlay .crest.pi { display: block; width: 104px; height: 104px; margin: 0 auto 4px; filter: drop-shadow(0 4px 10px rgba(0,0,0,.6)) drop-shadow(0 0 14px rgba(255,200,90,.25)); }
+.mode-card .icon .pi, .map-card .icon .pi { width: 64px; height: 64px; }
+.diff .di .pi { width: 34px; height: 34px; }
+.mbtns .btn .pi { width: 1.25em; height: 1.25em; }

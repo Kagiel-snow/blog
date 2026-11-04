@@ -4,14 +4,14 @@
 
 ## 西幻领主模拟器
 
-- 地址 `/projects/legion/`，文件在 `source/projects/legion/`，封面 `source/projects/legion-cover.jpg`。
+- 地址 `/projects/legion/`，文件在 `source/projects/legion/`，封面 `source/projects/legion-cover.jpg`（由游戏的 `assets/ui/poster.png` 缩成 960×540，工程页的 `cover` 也让它成为分享预览图 og:image）。
 - 游戏在单独的文件夹里开发。改完后在博客根目录运行（脚本会复制 index.html 引用的全部脚本和样式；美术图按游戏缓存的尺寸缩小：柔和渲染时为像素网格 × artRes、地块 320 像素，否则为 2 倍网格，画面不变，体积约为原来的十分之一）：
 
 ```sh
 npm run game:sync -- C:\Users\cxin1\projects\games\rouge
 ```
 
-脚本只复制 `index.html`、`style.css`、`data.js`、`game.js` 和 `assets/` 里的 PNG，不会带上旧版本目录和截图。`assets/_probe.png` 靠 `_config.yml` 的 `include` 才会发布（Hexo 默认跳过下划线开头的文件），游戏先探测它，探测不到就全部退回表情符号。之后照常提交并推送 `main`，GitHub Actions 会重新构建发布。
+脚本只复制 `index.html` 引用的文件和 `assets/` 里的图片（PNG 会缩小，菜单背景 `ui/menu_bg.jpg` 这类照片原样复制，海报 `ui/poster.png` 和 `backups/` 跳过），不会带上旧版本目录和截图。`assets/_probe.png` 靠 `_config.yml` 的 `include` 才会发布（Hexo 默认跳过下划线开头的文件），游戏先探测它，探测不到就全部退回表情符号。之后照常提交并推送 `main`，GitHub Actions 会重新构建发布。
 
 `_config.yml` 的 `skip_render` 让这个目录原样复制，不套博客主题；`tools/i18n/worker.cjs` 也会跳过这些文件，不把它们当成站点页面加菜单和翻译。游戏的 `index.html` 里 `?v=` 版本号随每次更新递增，读者就不会拿到缓存的旧脚本。
 

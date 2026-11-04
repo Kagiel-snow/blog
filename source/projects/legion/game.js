@@ -251,7 +251,8 @@ const lordIco = () => ART['portraits/lord'] ? artImgHtml('portraits/lord') : piH
 // 其余界面里的 emoji（资源、按钮）换成同名界面图标；只替换标签之间的文字，不碰 title 等属性
 const EMOJI_PI = { '🪙': 'gold', '🪵': 'wood', '🪨': 'stone', '🍖': 'food', '⬆': 'up', '🔧': 'repair', '🚩': 'flag', '👣': 'follow', '🔒': 'lock', '⚔': 'swords', '🏹': 'bow',
   '⚡': 'bolt', '💥': 'boom', '🔗': 'link', '⭐': 'star', '🍽': 'bowl', '🛕': 'temple', '⏩': 'speed', '⏸': 'pause', '✖': 'x', '🎯': 'target', '📍': 'pin', '✝': 'wings',
-  '👑': 'crown', '💀': 'skull', '📦': 'chest', '📖': 'scroll', '❤': 'heart', '⏳': 'time', '✨': 'magic', '🛡': 'shield', '♻': 'heal', '🗑': 'x' };
+  '👑': 'crown', '💀': 'skull', '📦': 'chest', '📖': 'scroll', '❤': 'heart', '⏳': 'time', '✨': 'magic', '🛡': 'shield', '♻': 'heal', '🗑': 'x',
+  '🏰': 'castle', '🏆': 'trophy', '⚙': 'gear', '📂': 'folder', '💾': 'save', '▶': 'play', '🏠': 'home', '🌲': 'forest', '⛰': 'mount', '🏜': 'desert', '🌱': 'sprout', '🔥': 'fire', '⚠': 'warn' };
 const EMOJI_RE = new RegExp('(' + Object.keys(EMOJI_PI).join('|') + ')\uFE0F?', 'g');
 const iconize = html => typeof UI_ICONS === 'undefined' ? html : html.replace(/(<[^>]*>)|([^<]+)/g, (m, tag, text) => tag || text.replace(EMOJI_RE, (e, k) => piHtml(EMOJI_PI[k]) || e));
 function injectIconCss() {
@@ -3741,7 +3742,7 @@ function drawMenuBg() {
 
 // ================= 界面（DOM） =================
 function hideOverlay() { overlay.className = 'hidden'; overlay.innerHTML = ''; }
-function showOverlay(html, light) { overlay.className = light ? 'light' : ''; overlay.innerHTML = html; overlay.scrollTop = 0; }
+function showOverlay(html, light) { overlay.className = (light ? 'light' : '') + (isLive() ? '' : ' menu-bg'); overlay.innerHTML = iconize(html); overlay.scrollTop = 0; }
 document.addEventListener('click', ev => {
   const el = ev.target.closest('[data-act]'); if (!el) return;
   const fn = ACTIONS[el.dataset.act];
@@ -4206,6 +4207,7 @@ function showMenu() {
   const auto = saveInfo(lsGet('save-auto'));
   const canCont = auto && !auto.old;
   showOverlay(`<div class="panel menu">
+    <div class="crest pi pi-crest"></div>
     <h1 class="title">西幻领主模拟器</h1>
     <div class="subtitle">领主亲征 · 召唤英雄 · 🏰 守城挡下 ${MAX_WAVE} 波魔物，或 👑 征服整片大陆</div>
     <div class="mbtns">
@@ -4374,7 +4376,7 @@ function showEnd(win) {
   const army = G.units.filter(u => !u.d.hero).map(u => u.d.icon).join(' ');
   showOverlay(`<div class="panel">
     <h1 class="title" style="color:${win ? '#ffd76a' : '#ff5a4a'}">${win ? (G.conq ? '称霸大陆' : '王国永存') : '主城陷落'}</h1>
-    <div class="subtitle">${G.conq ? (win ? '三个敌国尽数覆灭，你统一了整片大陆！' : '主城被攻破，王国覆灭……') : win ? '你守住了要塞，远古黑龙倒在城墙之下！' : `主城在第 ${G.wave} 波被攻破……`}</div>
+    <div class="subtitle">${G.conq ? (win ? '三个敌国尽数覆灭，你统一了整片大陆！' : '主城被攻破，王国覆灭……') : win ? '你守住了领地，远古黑龙倒在城墙之下！' : `主城在第 ${G.wave} 波被攻破……`}</div>
     <div class="big-stats">
       <span>地图</span><b>${G.map.icon} ${G.map.name}</b>
       <span>难度</span><b>${G.diff.icon} ${G.diff.name}</b>
