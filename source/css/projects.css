@@ -10,3 +10,4 @@
 .project-body p { margin: 8px 0 0 !important; color: var(--snow-muted); font-size: 13px; line-height: 1.6; }
 .project-body b { display: block; margin-top: 8px; color: var(--snow-blue); font-size: 13px; font-weight: 500; }
 @media (prefers-reduced-motion: reduce) { .project-card { transition: none; } .project-card:hover { transform: none; } }
+.project-credit { margin: 14px 0 0 !important; color: var(--snow-muted); font-size: 12px; }

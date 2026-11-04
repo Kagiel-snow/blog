@@ -256,3 +256,11 @@ h2 { font-size: 30px; color: #ffd76a; margin-bottom: 6px; text-shadow: 0 0 12px 
 .card.evt { min-height: 140px; width: 190px; }
 .card.locked { opacity: .5; cursor: not-allowed; }
 .mode-card { min-height: 220px; } .mode-card .icon { font-size: 54px; }
+/* 面板里的像素图标 */
+#panel h3 img.ai, #panel .ub img.ai, #panel .gu img.ai, #panel .hb img.ai, #panel .pb img.ai, #panel .tip img.ai, #topbar img.ai { width: 1.6em; height: 1.6em; object-fit: contain; vertical-align: -0.45em; }
+#panel .ub > img.ai, #panel .ub > .pi, #panel .gu > span > img.ai, #panel .gu > span > .pi { width: 34px; height: 34px; }
+#panel .hb .hi img.ai, #panel .hb .hi .pi { width: 30px; height: 30px; }
+#panel h3 .pi { width: 1.5em; height: 1.5em; vertical-align: -0.4em; }
+.bb .bi .pi { width: 30px; height: 30px; display: block; margin: 0 auto; }
+.bb .bi img.ai { image-rendering: auto; }
+.pi + .pi, img.ai.pix { width: 1.3em; height: 1.3em; vertical-align: -0.3em; }
