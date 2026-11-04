@@ -1,5 +1,5 @@
 'use strict';
-// ================= 军团之王：要塞 · 主逻辑（v3：领主 + 英雄召唤 + 多地图 + 双攻双防） =================
+// ================= 西幻领主模拟器 · 主逻辑（v3：领主 + 英雄召唤 + 多地图 + 双攻双防） =================
 const cvs = document.getElementById('game');
 const ctx = cvs.getContext('2d');
 const overlay = document.getElementById('overlay');
@@ -4206,7 +4206,7 @@ function showMenu() {
   const auto = saveInfo(lsGet('save-auto'));
   const canCont = auto && !auto.old;
   showOverlay(`<div class="panel menu">
-    <h1 class="title">军团之王：要塞</h1>
+    <h1 class="title">西幻领主模拟器</h1>
     <div class="subtitle">领主亲征 · 召唤英雄 · 🏰 守城挡下 ${MAX_WAVE} 波魔物，或 👑 征服整片大陆</div>
     <div class="mbtns">
       ${canCont ? `<div class="btn" data-act="menuContinue">▶ 继续游戏<small>${auto.text} · ${auto.when}</small></div>` : ''}
