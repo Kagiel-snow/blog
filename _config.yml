@@ -91,6 +91,7 @@ pagination_dir: page
 # Include / Exclude file(s)
 ## include:/exclude: options only apply to the 'source/' folder
 include:
+  - projects/legion/assets/_probe.png # Hexo hides _ files; the game checks this one before loading art
 exclude:
 ignore:
 

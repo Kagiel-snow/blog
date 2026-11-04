@@ -41,5 +41,8 @@
     "js-yaml": "4.3.1",
     "live2d-widget-model-shizuku": "^1.0.5",
     "live2d-widget-model-z16": "^1.0.5"
+  },
+  "devDependencies": {
+    "pngjs": "^7.0.0"
   }
 }
